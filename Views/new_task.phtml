@@ -1,0 +1,39 @@
+<?php
+?>
+<form action="/task/createTask" method="post" enctype="multipart/form-data">
+    <label></label>
+    <input type="text" name="created_by" value="<?=$_SESSION['login']?>" hidden>
+    <br>
+    <label>Исполнитель:</label>
+    <select multiple name="executor">
+        <?php
+        foreach ($_SESSION["allUsers"] as $users) {
+            if ($_SESSION["login"] == "Папа"){
+                if (mb_strtolower($users["status"], "UTF-8") == "сын" || mb_strtolower($users["status"], "UTF-8") == "дочь"){
+                    echo "<option value='" . $users['name'] . "'>" . $users['name'] . "</option>";
+                }
+                continue;
+            }
+            if ($users["name"] != "Мама") {
+                echo "<option value='" . $users['name'] . "'>" . $users['name'] . "</option>";
+            }
+        }
+        ?>
+    </select>
+    <br>
+    <label>Задание:</label>
+    <input name="task" type="text" size="30"/>
+    <br>
+    <label>Через сколько часов начнется:</label>
+    <input name="time_start" type="text" size="30"/><br>
+    <label>Сколько часов на выполнение:</label>
+    <input name="time_end" type="text" size="30"/>
+    <br>
+    <label>Фото к задаче:</label>
+    <input name="imageTask" type="file"/>
+    <br>
+    <button type="submit">Создать</button>
+</form>
+<form action="/" method="post">
+    <button type="submit">Назад</button>
+</form>

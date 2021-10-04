@@ -1,0 +1,33 @@
+<?php
+?>
+<table border="1">
+    <tr>
+        <td>id</td>
+        <td>Время создания</td>
+        <td>Создал</td>
+        <td>Исполнитель</td>
+        <td>Задание</td>
+        <td>статус</td>
+        <td>Время начала</td>
+        <td>Время окончания</td>
+        <td>Комментарий</td>
+        <td>Подтверждено кем</td>
+        <td>Изображение</td>
+    </tr>
+    <?php
+    $i = 0;
+    foreach ($_SESSION["doneTasks"] as $tasks) {
+        echo "<tr>";
+        foreach ($tasks as $key => $task) {
+            if ($key == "time_created" || $key == "time_start" || $key == "time_end") {
+                $task = date("H:i d.m", $task);
+            }
+            if ($key == "img_name") {
+                $task = "<img src='/Media/images/tasks/" . $task . "' width='50' height='50' alt='$task'>";
+            }
+            echo "<td>" . $task . "</td>";
+        }
+        echo "</tr>";
+    }
+    ?>
+</table>

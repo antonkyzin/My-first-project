@@ -1,0 +1,68 @@
+<form action="/user/deleteUser" method="post">
+    <table border="1">
+        <tr>
+            <td>id</td>
+            <td>Имя(Логин)</td>
+            <td>Статус</td>
+            <td>Возраст</td>
+            <td>Адрес</td>
+            <td>Подтверждение</td>
+            <td>Изображение</td>
+            <td>
+                <button type="submit">Удалить</button>
+            </td>
+        </tr>
+
+        <?php
+        foreach ($_SESSION["allUsers"] as $users) {
+            echo "<tr>";
+            foreach ($users as $key => $user) {
+                if ($user == $users["password"]) {
+                    continue;
+                } elseif ($user == $users["approve_status"] && $_SESSION["login"] == "Мама") {
+                    $user = ($user == 0) ? "<a href='/user/approveUser/id/" . $users['id'] . "'>Подтвердить</a>" : "Подтверждён!";
+                } elseif ($user == $users["approve_status"] && $_SESSION["login"] == "Папа") {
+                    if (mb_strtolower($users["status"], "UTF-8") == "сын" || mb_strtolower($users["status"], "UTF-8") == "дочь") {
+                        $user = ($user == 0) ? "<a href='/user/approveUser/id/" . $users['id'] . "'>Подтвердить</a>" : "Подтверждён!";
+                    } else {
+                        $user = ($user == 0) ? "Не подтверждён" : "Подтверждён!";
+                    }
+                } elseif ($key == "image"){
+                    $user = "<img src='/Media/images/users/" . $user . "' width='50' height='50' alt='$user'>";
+                }
+                echo "<td>" . $user . "</td>";
+            }
+            if ($users["name"] != "Мама" && $_SESSION["login"] == "Мама") {
+                echo "<td><input type='checkbox' name='" . $users['id'] . "' value='" . $users['id'] . "'></td>";
+            } else {
+                if (mb_strtolower($users["status"], "UTF-8") == "сын" || mb_strtolower($users["status"], "UTF-8") == "дочь") {
+                    echo "<td><input type='checkbox' name='" . $users['id'] . "' value='" . $users['id'] . "'></td>";
+                }
+            }
+            echo "</tr>";
+        }
+        ?>
+    </table>
+</form>
+<p>
+<form action="/user/updateUserStatus" method="post">
+    <label>Изменить статус пользователя:</label>
+    <p>
+        <select multiple name="id">
+            <option disabled>Выберите пользователя</option>
+            <?php
+            if ($_SESSION["login"] == "Мама") {
+                foreach ($_SESSION["allUsers"] as $users) {
+                    if ($users["name"] != "Мама") {
+                        echo "<option value='" . $users['id'] . "'>" . $users['name'] . "</option>";
+                    }
+                }
+            }
+            ?>
+        </select>
+    </p>
+
+    <input name="status" type="text" size="30"/>
+    <input type="submit" value="Отправить">
+</form>
+</p>

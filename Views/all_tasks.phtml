@@ -1,0 +1,70 @@
+<form action="/task/deleteTask" method="post">
+    <table border="1">
+        <tr>
+            <td>id</td>
+            <td>Время создания</td>
+            <td>Создал</td>
+            <td>Исполнитель</td>
+            <td>Задание</td>
+            <td>статус</td>
+            <td>Время начала</td>
+            <td>Время окончания</td>
+            <td>Комментарий</td>
+            <td>Подтверждено кем</td>
+            <td>Изображение</td>
+            <td>
+                <button type="submit">Удалить</button>
+            </td>
+        </tr>
+        <?php
+        foreach ($_SESSION["allTasks"] as $tasks) {
+            echo "<tr>";
+            foreach ($tasks as $key => $task) {
+                if ($key == "time_created" || $key == "time_start" || $key == "time_end") {
+                    $task = date("H:i d.m", $task);
+                }
+                if ($tasks["status"] == "выполнено" && $key == "approved_by" && ($_SESSION["login"] == "Мама" || $_SESSION["login"] == "Папа")) {
+                    $task = "<a href='/task/approveTask/id/" . $tasks["id"] . "'>Подтвердить</a>";
+                }
+                if ($key == "img_name") {
+                    $task = "<img src='/Media/images/tasks/" . $task . "' width='50' height='50' alt='$task'>";
+                }
+                echo "<td>" . $task . "</td>";
+            }
+            if ($_SESSION["login"] == "Мама") {
+                echo "<td><input type='checkbox' name='" . $tasks['id'] . "' value='" . $tasks['id'] . "'></td>";
+            } elseif ($_SESSION["login"] == "Папа") {
+                if (mb_strtolower($tasks["executor"], "UTF-8") == "сын" || mb_strtolower($tasks["executor"], "UTF-8") == "дочь") {
+                    echo "<td><input type='checkbox' name='" . $tasks['id'] . "' value='" . $tasks['id'] . "'></td>";
+                }
+                echo "</tr>";
+            }
+        }
+        ?>
+    </table>
+</form>
+
+<form action="/task/updateTask" method="post">
+    <label>Изменить задание:</label>
+    <p>
+        <select multiple name="id">
+            <option disabled>Выберите id задания</option>
+            <?php
+            if ($_SESSION["login"] == "Мама") {
+                foreach ($_SESSION["allTasks"] as $tasks) {
+                    echo "<option value='" . $tasks['id'] . "'>" . $tasks['id'] . "</option>";
+                }
+            } elseif ($_SESSION["login"] == "Папа") {
+                foreach ($_SESSION["allTasks"] as $tasks) {
+                    if (mb_strtolower($tasks["executor"], "UTF-8") == "сын" || mb_strtolower($tasks["executor"], "UTF-8") == "дочь") {
+                        echo "<option value='" . $tasks['id'] . "'>" . $tasks['id'] . "</option>";
+                    }
+                }
+            }
+            ?>
+        </select>
+    </p>
+    <input name="task" type="text" size="30"/>
+    <input type="submit" value="Отправить">
+
+</form>

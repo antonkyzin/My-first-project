@@ -1,0 +1,57 @@
+<?php
+?>
+<table border="1">
+    <tr>
+        <td>id</td>
+        <td>Время создания</td>
+        <td>Создал</td>
+        <td>Исполнитель</td>
+        <td>Задание</td>
+        <td>статус</td>
+        <td>Время начала</td>
+        <td>Время окончания</td>
+        <td>Комментарий</td>
+        <td>Подтверждено кем</td>
+        <td>Изображение</td>
+    </tr>
+    <?php
+    $i = 0;
+    foreach ($_SESSION["failTasks"] as $tasks) {
+        echo "<tr>";
+        foreach ($tasks as $key => $task) {
+            if ($key == "time_created" || $key == "time_start" || $key == "time_end") {
+                $task = date("H:i d.m", $task);
+            }
+            if ($key == "img_name") {
+                $task = "<img src='/Media/images/tasks/" . $task . "' width='50' height='50' alt='$task'>";
+            }
+            echo "<td>" . $task . "</td>";
+        }
+        echo "</tr>";
+    }
+    ?>
+</table>
+
+<form action="/task/restartTask" method="post">
+    <label>Возобновить задание:</label>
+    <p>
+        <select multiple name="id">
+            <option disabled>Выберите id задания</option>
+            <?php
+            if ($_SESSION["login"] == "Мама") {
+                foreach ($_SESSION["failTasks"] as $tasks) {
+                    echo "<option value='" . $tasks['id'] . "'>" . $tasks['id'] . "</option>";
+                }
+            }
+            ?>
+        </select>
+    </p>
+    <label>Через сколько начнется:</label>
+    <input name="timeStart" type="text" size="30"/>
+    <br>
+    <label>Через сколько закончится:</label>
+    <input name="timeEnd" type="text" size="30"/>
+    <br>
+    <input type="submit" value="Отправить">
+
+</form>
