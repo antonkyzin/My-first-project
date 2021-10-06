@@ -24,7 +24,7 @@ CREATE TABLE `tasks` (
 	`status` TINYINT NOT NULL,
 	`time_start` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	`time_end` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	`comment` TINYTEXT NOT NULL,
+	`comment` TINYTEXT,
 	`approved_by` INT NOT NULL,
 	`image` VARCHAR(100),
 	PRIMARY KEY (`id`),
