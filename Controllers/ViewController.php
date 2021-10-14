@@ -4,27 +4,17 @@ namespace Controllers;
 
 use Models;
 
-class ViewController implements IController
+class ViewController
 {
-    private $fc;
-    private $model;
+    private $vievMmodel;
 
     public function __construct()
     {
-        $this->fc = FrontController::getInstance();
-        $this->model = new Models\ViewModel();
+        $this->vievMmodel = new Models\ViewModel();
     }
 
     public function indexAction()
     {
-        $output = $this->model->renderIndex();
-        $this->fc->setBody($output);
+        $this->vievMmodel->render();
     }
-
-    public function renderAction()
-    {
-        $params = $this->fc->getParams();
-        $output = $this->model->render($params["opt"]);
-        $this->fc->setBody($output);
-  }
 }
