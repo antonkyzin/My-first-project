@@ -2,89 +2,92 @@
 
 namespace Models;
 
-class UserModel
+class UserModel extends DatabaseModel
 {
-    public function __construct()
+    public function login($login, $password)
     {
-        $this->pdo = new \PDO('mysql:host=test.local;dbname=Family', 'snuff', 'kyzmi4');
+        $user = $this->userExist($login);
+        if ($user && password_verify($password, $user[0]['password']) && ($user[0]['approve_status'])) {
+            $_SESSION['login'] = $login;
+            $_SESSION['id'] = $user[0]['id'];
+            return 1;
+        } elseif ($user && !$user[0]['approve_status']) {
+            return 2;
+        }
+        return 0;
     }
 
-    public function createUser($name, $status, $age, $address, $password, $approved, $imgName)
+    public function userExist($login)
     {
-        $users = $this->getAllUsers();
-        foreach ($users as $user) {
-            if ($user["name"] == $name) {
-                return "Пользователь с таким именем уже зарегистрирован";
-            }
-        }
-        $sql = "INSERT INTO Users (name, status, age, address, approve_status, password, image ) VALUES ('$name', '$status', '$age', '$address', '$approved', '$password', '$imgName')";
-        if ($this->pdo->exec($sql)) {
-            return "Заявка принята на рассмотрение. Ожидайте подтверждение от Мамы!";
-        }
-        return "Произошла ошибка при регистрации. Вы ввели некорректные данные";
+        $field = ['id', 'login', 'password', 'approve_status'];
+        $condition = "`login` = '$login'";
+        return $this->selectData('users', $field, $condition);
     }
 
-    public function userExist($login, $password)
+    public function newUser(array $data)
     {
-        $users = $this->getAllUsers();
-        foreach ($users as $user) {
-            if ($user["name"] == $login && password_verify($password, $user["password"]) && $user["approve_status"] == 1) {
-                return true;
-            } elseif ($user["name"] == $login && password_verify($password, $user["password"]) && $user["approve_status"] == 0) {
-                return "Дождитесь подтверждения от мамы";
-            }
+        $user = $this->userExist($data['login']);
+        if ($user) {
+            return 'exist';
         }
-        return "Пользователь не найден или неверный пароль";
-    }
-
-    public function deleteUser($id)
-    {
-        foreach ($_SESSION["allUsers"] as $user){
-            if ($user["id"] == $id){
-                unlink("Media/images/users/" . $user["image"]);
-            }
+        $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
+        if ($_FILES['image']['error'] == UPLOAD_ERR_OK) {
+            $data['image'] = rand() . $_FILES['image']['name'];
+            move_uploaded_file($_FILES['image']['tmp_name'], 'Media/images/users/' . $data['image']);
+        } else {
+            $data['image'] = 'standart_avatar.jpg';
         }
-        $sql = "DELETE FROM Users WHERE id IN ($id)";
-        $this->pdo->exec($sql);
-    }
-
-    public function updateUserStatus($status, $id)
-    {
-        $sql = "UPDATE Users SET status='$status' WHERE id='$id'";
-        $this->pdo->exec($sql);
+        $result = $this->insertData('users', $data);
+        if ($result) {
+            return true;
+        }
+        return false;
     }
 
     public function getAllUsers()
     {
-        $sql = "SELECT * FROM Users";
-        $result = $this->pdo->query($sql);
-        return $result->fetchAll(\PDO::FETCH_ASSOC);
+        $field = ['id', 'name', 'family_member', 'age', 'address', 'approve_status', 'image'];
+        return $this->selectData('users', $field);
     }
 
-    public function approveUser($id)
+    public function deleteUser(array $data)
     {
-        $sql = "UPDATE Users SET approve_status=true WHERE id='$id'";
-        $this->pdo->exec($sql);
+        $id = implode(',', $data);
+        return $this->deleteData('users', $id);
+    }
+
+    public function updateUser(array $data)
+    {
+        $field['family_member'] = $data['status'];
+        $condition = '`id` = ' . $data['id'];
+        return $this->updateData('users', $field, $condition);
+
+    }
+
+    public function approveUser($data)
+    {
+        $field['approve_status'] = 1;
+        $condition = '`id` = ' . $data['id'];
+        return $this->updateData('users', $field, $condition);
     }
 
     public function changeAvatar()
     {
-        $imgName = "";
-        if ($_FILES['imageUser']["error"] == UPLOAD_ERR_OK) {
-            foreach ($_SESSION["allUsers"] as $users) {
-                if ($users["name"] == $_SESSION['login']) {
-                    if (isset($users['image'])) {
-                        $imgName = $users["image"];
-                        move_uploaded_file($_FILES['imageUser']['tmp_name'], 'Media/images/users/' . $imgName);
-                        return true;
-                    } else {
-                        $imgName = rand() . $_FILES['imageUser']['name'];
-                        move_uploaded_file($_FILES['imageUser']['tmp_name'], 'Media/images/users/' . $imgName);
-                        $login = $_SESSION['login'];
-                        $sql = "UPDATE Users SET image = '$imgName' WHERE name = '$login'";
-                        return $this->pdo->exec($sql);
-                    }
-                }
+        $imgName = '';
+        if ($_FILES['image']['error'] == UPLOAD_ERR_OK) {
+            $field = ['login', 'image'];
+            $login = $_SESSION['login'];
+            $condition = "`login` = '$login'";
+            $user = $this->selectData('users', $field, $condition);
+            if (isset($user[0]['image'])) {
+                $imgName = $user[0]['image'];
+                move_uploaded_file($_FILES['image']['tmp_name'], 'Media/images/users/' . $imgName);
+                return true;
+            } else {
+                $imgName = rand() . $_FILES['image']['name'];
+                move_uploaded_file($_FILES['image']['tmp_name'], 'Media/images/users/' . $imgName);
+                $field = ['image' => $imgName];
+                return $this->updateData('users', $field, $condition);
             }
         }
         return false;
@@ -92,14 +95,13 @@ class UserModel
 
     public function deleteAvatar()
     {
-        foreach ($_SESSION['allUsers'] as $user) {
-            if ($user['name'] == $_SESSION['login']) {
-                unlink("Media/images/users/" . $user["image"]);
-            }
-        }
+        $field = ['login', 'image'];
         $login = $_SESSION['login'];
-        $sql = "UPDATE Users SET image = NULL WHERE name = '$login'";
-        return $this->pdo->exec($sql);
+        $condition = "`login` = '$login'";
+        $user = $this->selectData('users', $field, $condition);
+        $imgName = $user[0]["image"];
+        unlink("Media/images/users/" . $imgName);
+        $field = ['image' => 'standart_avatar.jpg'];
+        return $this->updateData('users', $field, $condition);
     }
-
 }

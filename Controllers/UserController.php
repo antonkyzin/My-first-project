@@ -3,100 +3,164 @@
 namespace Controllers;
 
 use Models\UserModel;
+use Models\ViewModel;
 
-class UserController implements IController
+class UserController
 {
-    private $model;
-    private $fc;
+    private $userModel;
+    private $viewModel;
 
     public function __construct()
     {
-        $this->model = new UserModel();
-        $this->fc = FrontController::getInstance();
+        $this->userModel = new UserModel();
+        $this->viewModel = new ViewModel();
     }
 
-    public function createUserAction()
+    public function loginAction()
     {
-        $imgName = "";
-        if ($_FILES['imageUser']["error"] == UPLOAD_ERR_OK) {
-            $imgName = rand() . $_FILES['imageUser']['name'];
-            move_uploaded_file($_FILES['imageUser']['tmp_name'], 'Media/images/users/' . $imgName);
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+            $login = $_POST['login'];
+            $password = $_POST['password'];
+            $result = $this->userModel->login($login, $password);
+            switch ($result) {
+                case 1 :
+                    $this->viewModel->location('/');
+                    break;
+                case 2 :
+                    $errMsg = 'Мама пока не дала разрешение на вход!';
+                    $this->viewModel->render(null, $errMsg);
+                    break;
+                case 0 :
+                    $errMsg = 'Неверный логин или пароль!';
+                    $this->viewModel->render(null, $errMsg);
+            }
+        } else {
+            $errMsg = 'Простите, но что-то пошло не так. Попробуйте еще раз';
+            $this->viewModel->render(null, $errMsg);
         }
-        $name = $_POST["login"];
-        $status = $_POST["status"];
-        $age = $_POST["age"];
-        $address = $_POST ["address"];
-        $password = password_hash($_POST["password"], PASSWORD_BCRYPT);
-        $approved = 0;
-        $res = $this->model->createUser($name, $status, $age, $address, $password, $approved, $imgName);
-        echo $res;
-        header("Refresh:3; url=/");
-    }
-
-    public function userExistAction()
-    {
-        $login = $_POST["login"];
-        $password = $_POST["password"];
-        $res = $this->model->userExist($login, $password);
-        if ($res === true) {
-            $_SESSION["login"] = $_POST["login"];
-            $_SESSION["allUsers"] = $this->model->getAllUsers();
-            header("Location: /");
-        }
-        echo $res;
-        header("Refresh:3; url=/");
-    }
-
-    public function deleteUserAction()
-    {
-        $id = implode(",", $_POST);
-        $this->model->deleteUser($id);
-        header("Location: /user/getAllUsers");
-    }
-
-    public function updateUserStatusAction()
-    {
-        $id = $_POST["id"];
-        $status = $_POST["status"];
-        $this->model->updateUserStatus($status, $id);
-        header("Location: /user/getAllUsers");
-    }
-
-
-    public function getAllUsersAction()
-    {
-        $_SESSION["allUsers"] = $this->model->getAllUsers();
-        header("Location: /view/render/opt/allUsers");
-    }
-
-    public function approveUserAction()
-    {
-        $params = $this->fc->getParams();
-        $this->model->approveUser($params["id"]);
-        header("Location: /user/getAllUsers");
     }
 
     public function logoutAction()
     {
-        session_unset();
-        header("Location: /");
+        session_destroy();
+        $this->viewModel->location('/');
+    }
+
+    public function registrationAction($errMsg = null)
+    {
+        $isSigned = $this->userModel->isSigned();
+        if (!$isSigned) {
+            $options = [
+                'title' => 'Регистрация',
+                'content' => 'registration.phtml'
+            ];
+            $this->viewModel->render($options, $errMsg);
+        } else {
+            $this->viewModel->location('/');
+        }
+    }
+
+    public function newAction()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+            $result = $this->userModel->newUser($_POST);
+        }
+        if ($result === 'exist') {
+            $this->registrationAction('Пользователь с таким логином уже зарегистрирован.');
+        } elseif ($result) {
+            $this->registrationAction('Вы успешно зарегистрировались. Ожидайте подтверждения от мамы.');
+        } else {
+            $this->registrationAction('Произошла ошибка. Вы ввели некорректные данные.');
+        }
+    }
+
+    public function allUsersAction()
+    {
+        $isSigned = $this->userModel->isSigned();
+        if ($isSigned) {
+            $allUsers = $this->userModel->getAllUsers();
+            $options = [
+                'title' => 'Список пользователей',
+                'content' => 'all_users.phtml',
+                'allUsers' => $allUsers
+            ];
+            $this->viewModel->render($options);
+        } else {
+            $this->viewModel->location('/');
+        }
+    }
+
+    public function deleteAction()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+            $result = $this->userModel->deleteUser($_POST);
+            if ($result) {
+                $this->viewModel->location('/user/allUsers');
+            }
+        }
+    }
+
+    public function updateUserAction()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+            $result = $this->userModel->updateUser($_POST);
+            if ($result) {
+                $this->viewModel->location('/user/allUsers');
+            }
+        }
+    }
+
+    public function approveUserAction()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+            $result = $this->userModel->approveUser($_POST);
+            if ($result) {
+                $this->viewModel->location('/user/allUsers');
+            }
+        }
+    }
+
+    public function avatarFormAction($errMsg = null)
+    {
+        $isSigned = $this->userModel->isSigned();
+        if ($isSigned) {
+            $options = [
+                'title' => 'Аватар',
+                'content' => 'change_avatar.phtml'
+            ];
+            $this->viewModel->render($options, $errMsg);
+        } else {
+            $this->viewModel->location('/');
+        }
     }
 
     public function changeAvatarAction()
     {
-        $res = $this->model->changeAvatar();
-        if ($res){
-            header("Location: /");
+        $isSigned = $this->userModel->isSigned();
+        if ($isSigned) {
+            $result = $this->userModel->changeAvatar();
+            if ($result) {
+                $this->viewModel->location('/user/avatarForm');
+            } else {
+                $errMsg = 'Произошла ошибка';
+                $this->avatarFormAction($errMsg);
+            }
+        } else {
+            $this->viewModel->location('/');
         }
-        echo "Выберите изображение";
-        header("Refresh:3; url=/");
     }
 
-    public function deleteAvatarAction(){
-        $res =  $this->model->deleteAvatar();
-        if ($res){
-            header("Location: /");
+    public function deleteAvatarAction()
+    {
+        $isSigned = $this->userModel->isSigned();
+        if ($isSigned) {
+            $result = $this->userModel->deleteAvatar();
+            if ($result) {
+                $errMsg = 'Аватар успешно удалён';
+                $this->avatarFormAction($errMsg);
+            }
+        } else {
+            $this->viewModel->location('/');
         }
     }
-
 }
