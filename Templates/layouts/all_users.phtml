@@ -1,5 +1,5 @@
-<form action="/user/delete" method="post">
-    <table border="1">
+<form action='/user/delete' method='post'>
+    <table border='1'>
         <tr>
             <td>id</td>
             <td>Имя</td>
@@ -9,7 +9,7 @@
             <td>Статус</td>
             <td>Изображение</td>
             <td>
-                <button type="submit">Удалить</button>
+                <button type='submit'>Удалить</button>
             </td>
         </tr>
 
@@ -22,20 +22,26 @@
                         $user = ($user == '1') ? 'подтверждён' : 'не подтверждён';
                     endif; ?>
                     <td> <?= $user ?> </td>
-                <?php endforeach; ?>
-                <td><input type='checkbox' name='<?= $users['id'] ?>' value='<?= $users['id'] ?>'></td>
+                <?php endforeach;
+                if ($options['login'] == 'mother'):?>
+                    <td><input type='checkbox' name='<?= $users['id'] ?>' value='<?= $users['id'] ?>'></td>
+                <?php elseif ($options['login'] == 'father'):
+                    if (mb_strtolower($users['family_member'], 'UTF-8') == 'сын' || mb_strtolower($users['family_member'], 'UTF-8') == 'дочь'): ?>
+                        <td><input type='checkbox' name='<?= $users['id'] ?>' value='<?= $users['id'] ?>'></td>
+                    <?php endif;
+                endif; ?>
             </tr>
         <?php endforeach; ?>
     </table>
 </form>
 
 <p>
-<form action="/user/updateUser" method="post">
+<form action='/user/updateUser' method='post'>
     <label>Изменить статус пользователя:</label>
     <p>
-        <select multiple name="id">
+        <select multiple name='id'>
             <option disabled>Выберите пользователя</option>
-            <?php if ($_SESSION['login'] == 'mother'):
+            <?php if ($options['login'] == 'mother'):
                 foreach ($options['allUsers'] as $users): ?>
                     <option value='<?= $users['id'] ?>'><?= $users['name'] ?> </option>;
                 <?php endforeach;
@@ -44,27 +50,30 @@
         </select>
     </p>
 
-    <input name="status" type="text" size="30"/>
-    <input type="submit" value="Отправить">
+    <input name='status' type='text' size='30'/>
+    <input type='submit' value='Отправить'>
 </form>
 </p>
 
 <p>
-<form action="/user/approveUser" method="post">
+<form action='/user/approveUser' method='post'>
     <label>Подтвердить пользователя:</label>
     <p>
-        <select multiple name="id">
+        <select multiple name='id'>
             <option disabled>Выберите пользователя</option>
-            <?php if ($_SESSION['login'] == 'mother'):
-                foreach ($options['allUsers'] as $users):
-                    if ($users['approve_status'] == 0): ?>
-                        <option value='<?= $users['id'] ?>'><?= $users['name'] ?> </option>;
-                    <?php endif;
-                endforeach;
-            endif;
-            ?>
+            <?php foreach ($options['allUsers'] as $users):
+                if ($users['approve_status'] == 0):
+                    if ($options['login'] == 'mother'): ?>
+                        <option value='<?= $users['id'] ?>'><?= $users['name'] ?> </option>
+                    <?php elseif ($options['login'] == 'father'):
+                        if (mb_strtolower($users['family_member'], 'UTF-8') == 'сын' || mb_strtolower($users['family_member'], 'UTF-8') == 'дочь'): ?>
+                            <option value='<?= $users['id'] ?>'><?= $users['name'] ?> </option>
+                        <?php endif;
+                    endif;
+                endif;
+            endforeach; ?>
         </select>
     </p>
-    <input type="submit" value="Отправить">
+    <input type='submit' value='Отправить'>
 </form>
 </p>

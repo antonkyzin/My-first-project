@@ -1,5 +1,6 @@
-<form action="/task/deleteTask" method="post">
-    <table border="1">
+<?php echo isset($errMsg) ? $errMsg : '' ?>
+<form action='/task/deleteTask' method='post'>
+    <table border='1'>
         <tr>
             <td>id</td>
             <td>Время создания</td>
@@ -13,49 +14,48 @@
             <td>Подтверждено кем</td>
             <td>Изображение</td>
             <td>
-                <button type="submit">Удалить</button>
+                <button type='submit'>Удалить</button>
             </td>
         </tr>
-        <?php
-        foreach ($options['allTasks'] as $tasks) {
-            echo "<tr>";
-            foreach ($tasks as $key => $task) {
-                echo "<td>" . $task . "</td>";
-            }
-            if ($_SESSION["login"] == "mother") {
-                echo "<td><input type='checkbox' name='" . $tasks['id'] . "' value='" . $tasks['id'] . "'></td>";
-            } elseif ($_SESSION["login"] == "Папа") {
-                if (mb_strtolower($tasks["executor"], "UTF-8") == "сын" || mb_strtolower($tasks["executor"], "UTF-8") == "дочь") {
-                    echo "<td><input type='checkbox' name='" . $tasks['id'] . "' value='" . $tasks['id'] . "'></td>";
-                }
-                echo "</tr>";
-            }
-        }
-        ?>
+        <?php foreach ($options['allTasks'] as $tasks): ?>
+            <tr>
+            <?php foreach ($tasks as $key => $task):
+                if ($key == 'image'):
+                    $task = '<img src=\'/Media/images/tasks/' . $task . "' width='50' height='50' alt='$task'>";
+                endif; ?>
+                <td><?= $task ?></td>
+            <?php endforeach;
+            if ($options['login'] == 'mother'): ?>
+                <td><input type='checkbox' name='<?= $tasks['id'] ?>' value='<?= $tasks['id'] ?>'></td>
+            <?php elseif ($options['login'] == 'father'):
+                if (mb_strtolower($tasks['executor'], 'UTF-8') == 'сын' || mb_strtolower($tasks['executor'], 'UTF-8') == 'дочь'): ?>
+                    <td><input type='checkbox' name='<?= $tasks['id'] ?>' value='<?= $tasks['id'] ?>'></td>
+                <?php endif; ?>
+                </tr>
+            <?php endif;
+        endforeach; ?>
     </table>
 </form>
 
-<form action="/task/updateTask" method="post">
+<form action='/task/updateTask' method='post'>
     <label>Изменить задание:</label>
     <p>
-        <select multiple name="id">
+        <select multiple name='id'>
             <option disabled>Выберите id задания</option>
-            <?php
-            if ($_SESSION["login"] == "Мама") {
-                foreach ($_SESSION["allTasks"] as $tasks) {
-                    echo "<option value='" . $tasks['id'] . "'>" . $tasks['id'] . "</option>";
-                }
-            } elseif ($_SESSION["login"] == "Папа") {
-                foreach ($_SESSION["allTasks"] as $tasks) {
-                    if (mb_strtolower($tasks["executor"], "UTF-8") == "сын" || mb_strtolower($tasks["executor"], "UTF-8") == "дочь") {
-                        echo "<option value='" . $tasks['id'] . "'>" . $tasks['id'] . "</option>";
-                    }
-                }
-            }
+            <?php if ($options['login'] == 'mother'):
+                foreach ($options['allTasks'] as $tasks): ?>
+                    <option value='<?= $tasks['id'] ?>'><?= $tasks['id'] ?></option>
+                <?php endforeach;
+            elseif ($options['login'] == 'father'):
+                foreach ($options['allTasks'] as $tasks):
+                    if (mb_strtolower($tasks['executor'], 'UTF-8') == 'сын' || mb_strtolower($tasks['executor'], 'UTF-8') == 'дочь'): ?>
+                        <option value='<?= $tasks['id'] ?>'><?= $tasks['id'] ?></option>
+                    <?php endif;
+                endforeach;
+            endif;
             ?>
         </select>
     </p>
-    <input name="task" type="text" size="30"/>
-    <input type="submit" value="Отправить">
-
+    <input name='task' type='text' size='30'/>
+    <input type='submit' value='Отправить'>
 </form>

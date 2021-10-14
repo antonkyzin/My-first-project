@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title><?php echo $options['title'] ?></title>
+    <style type='text/css'>
+        #footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            padding: 10px;
+            width: 100%;
+            text-align: center;
+        }
+
+        #header {
+            padding: 10px;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+<div id='header'>
+    <?php include_once('layouts/' . $options['header']) ?>
+</div>
+<div>
+    <?php if (isset($options['menu'])) {
+        include_once('layouts/' . $options['menu']);
+    } ?>
+    <?php if ($options['content']) {
+        include_once('layouts/' . $options['content']);
+    } ?>
+</div>
+<div id='footer'>
+    <?php include_once('layouts/' . $options['footer']) ?>
+</div>
+</body>
+</html>

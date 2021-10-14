@@ -1,21 +1,13 @@
-<form action="/user/userExist" method="post">
+<form action='/user/userExist' method='post'>
     <label>Логин:</label>
-    <input name="login" type="text" size="30"/>
+    <input name='login' type='text' size='30'/>
     <br>
     <label>Пароль:</label>
-    <input name="password" type="password" size="30"/>
+    <input name='password' type='password' size='30'/>
     <br>
-    <button type="submit">Войти</button>
+    <button type='submit'>Войти</button>
 </form>
 
-<?php
-//if ($_SERVER["REQUEST_METHOD"] == "POST"){
-//    $login = $_POST["login"];
-//    $password = $_POST["password"];
-//   $ex= $ww->userExist($login, $password);
-//}
-//?>
-<!---->
-<form action="view/render/opt/registration" method="post">
-    <button type="submit">Регистрация</button>
+<form action='view/render/opt/registration' method='post'>
+    <button type='submit'>Регистрация</button>
 </form>

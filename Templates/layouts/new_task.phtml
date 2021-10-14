@@ -1,12 +1,12 @@
 <?php echo isset($errMsg) ? $errMsg : ''?>
-<form action='/task/create' method='post' enctype='multipart/form-data'>
+<form action='/task/createTask' method='post' enctype='multipart/form-data'>
     <label></label>
     <input type='text' name='created_by' value="<?= $_SESSION['login']=='mother' ? 1 :2 ?>" hidden>
     <br>
     <label>Исполнитель:</label>
     <select multiple name='executor' required>
         <?php foreach ($options['usersName'] as $users):
-            if ($_SESSION['login'] == 'father'):
+            if ($options['login'] == 'father'):
                 if (mb_strtolower($users['family_member'], 'UTF-8') == 'сын' || mb_strtolower($users['family_member'], 'UTF-8') == 'дочь'): ?>
                     <option value='<?= $users['id'] ?>'><?= $users['name'] ?></option>
                 <?php endif;
@@ -30,6 +30,6 @@
     <br>
     <button type='submit'>Создать</button>
 </form>
-<form action='/task/create' method='post'>
+<form action='/' method='post'>
     <button type='submit'>Назад</button>
 </form>

@@ -1,23 +1,15 @@
 <h1>Добро пожаловать! Авторизируйтесь на сайте или пройдите регистрацию</h1>
-<?php echo $options['errMsg'] ?? ""?>
-<form action="/user/login" method="post">
+<?php echo $options['errMsg'] ?? ''?>
+<form action='/user/login' method='post'>
     <label>Логин:</label>
-    <input name="login" type="text" size="30" required placeholder="Ваш логин"/>
+    <input name='login' type='text' size='30' required placeholder='Ваш логин'/>
     <br>
     <label>Пароль:</label>
-    <input name="password" type="password" size="30" required placeholder="Ваш пароль"/>
+    <input name='password' type='password' size='30' required placeholder='Ваш пароль'/>
     <br>
-    <button type="submit">Войти</button>
+    <button type='submit'>Войти</button>
 </form>
 
-<?php
-//if ($_SERVER["REQUEST_METHOD"] == "POST"){
-//    $login = $_POST["login"];
-//    $password = $_POST["password"];
-//   $ex= $ww->userExist($login, $password);
-//}
-//?>
-<!---->
-<form action="/user/registration" method="post">
-    <button type="submit">Регистрация</button>
+<form action='/user/registration' method='post'>
+    <button type='submit'>Регистрация</button>
 </form>

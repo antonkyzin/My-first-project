@@ -1,6 +1,5 @@
-<?php
-?>
-<table border="1">
+<?php echo isset($errMsg) ? $errMsg : '' ?>
+<table border='1'>
     <tr>
         <td>id</td>
         <td>Время создания</td>
@@ -14,20 +13,34 @@
         <td>Подтверждено кем</td>
         <td>Изображение</td>
     </tr>
-    <?php
-    $i = 0;
-    foreach ($_SESSION["doneTasks"] as $tasks) {
-        echo "<tr>";
-        foreach ($tasks as $key => $task) {
-            if ($key == "time_created" || $key == "time_start" || $key == "time_end") {
-                $task = date("H:i d.m", $task);
-            }
-            if ($key == "img_name") {
-                $task = "<img src='/Media/images/tasks/" . $task . "' width='50' height='50' alt='$task'>";
-            }
-            echo "<td>" . $task . "</td>";
-        }
-        echo "</tr>";
-    }
-    ?>
+    <?php foreach ($options['doneTasks'] as $tasks): ?>
+        <tr>
+            <?php foreach ($tasks as $key => $task):
+                if ($key == 'image'):
+                    $task = '<img src=\'/Media/images/tasks/' . $task . "' width='50' height='50' alt='$task'>";
+                endif; ?>
+                <td><?= $task ?></td>
+            <?php endforeach; ?>
+        </tr>
+    <?php endforeach; ?>
 </table>
+
+<form action='/task/approveTask' method='post'>
+    <label>Подтвердить выполнение задания:</label>
+    <p>
+        <select multiple name='id'>
+            <option disabled>Выберите id задания</option>
+            <?php foreach ($options['doneTasks'] as $tasks):
+                if ($options['login'] == 'mother'): ?>
+                    <option value='<?= $tasks['id'] ?>'><?= $tasks['id'] ?></option>
+                <?php elseif ($options['login'] == 'father'):
+                    if (mb_strtolower($tasks['executor'], 'UTF-8') == 'сын' || mb_strtolower($tasks['executor'], 'UTF-8') == 'дочь'): ?>
+                        <option value='<?= $tasks['id'] ?>'><?= $tasks['id'] ?></option>
+                    <?php endif;
+                endif;
+            endforeach;
+            ?>
+        </select>
+    </p>
+    <input type='submit' value='Отправить'>
+</form>
