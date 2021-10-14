@@ -4,101 +4,64 @@ namespace Controllers;
 
 class FrontController
 {
-  protected $_controller;
-  protected $_action, $_params, $_body;
+    protected $controller;
+    protected $action, $params;
+    static $instance;
 
-  static $_instance;
-
-  public static function getInstance()
-  {
-    if (!(self::$_instance instanceof self)) {
-      self::$_instance = new self();
-    }
-    return self::$_instance;
-  }
-
-  private function __construct()
-  {
-    $request = $_SERVER['REQUEST_URI'];
-    $splits = explode('/', trim($request,'/'));
-    //Какой сontroller использовать?
-    $this->_controller = !empty($splits[0]) ?
-        $this->getFullControllerName(ucfirst($splits[0]).'Controller')
-                                            : $this->getFullControllerName('ViewController');
-    //Какой action использовать?
-    $this->_action = !empty($splits[1]) ? $splits[1].'Action' : 'indexAction';
-    //Есть ли параметры и их значения?
-    if(!empty($splits[2])){
-      $keys = $values = [];
-      for($i=2, $cnt = count($splits); $i<$cnt; $i++){
-        if($i % 2 == 0){
-          //Чётное = ключ (параметр)
-          $keys[] = $splits[$i];
-        }else{
-          //Значение параметра;
-          $values[] = $splits[$i];
+    public static function getInstance()
+    {
+        if (!(self::$instance instanceof self)) {
+            self::$instance = new self();
         }
-      }
-      $this->_params = array_combine($keys, $values);
+        return self::$instance;
     }
-  }
 
-  public function route()
-  {
-    if(class_exists($this->getController())) {
-      $rc = new \ReflectionClass($this->getController());
-      if($rc->implementsInterface($this->getFullControllerName('IController'))) {
-        if($rc->hasMethod($this->getAction())) {
-          $controller = $rc->newInstance();
-          $method = $rc->getMethod($this->getAction());
-          $method->invoke($controller);
+    private function __construct()
+    {
+        $request = $_SERVER['REQUEST_URI'];
+        $splits = explode('/', trim($request, '/'));
+        $this->controller = !empty($splits[0]) ?
+            $this->getFullControllerName(ucfirst($splits[0]) . 'Controller')
+            : $this->getFullControllerName('ViewController');
+        $this->action = !empty($splits[1]) ? $splits[1] . 'Action' : 'indexAction';
+        if (!empty($splits[2])) {
+            $keys = $values = [];
+            for ($i = 2, $count = count($splits); $i < $count; $i++) {
+                if ($i % 2 == 0) {
+                    $keys[] = $splits[$i];
+                } else {
+                    $values[] = $splits[$i];
+                }
+            }
+            $this->params = array_combine($keys, $values);
+        }
+    }
+
+    public function route()
+    {
+        if (class_exists($this->controller)) {
+            $reflector = new \ReflectionClass($this->controller);
+            if ($reflector->hasMethod($this->action)) {
+                $controller = $reflector->newInstance();
+                $method = $reflector->getMethod($this->action);
+                $method->invoke($controller, $this->params);
+            } else {
+                $this->ErrorPage404();
+            }
         } else {
-          throw new \Exception("Action");
+            $this->ErrorPage404();
         }
-      } else {
-        throw new \Exception("Interface");
-      }
-    } else {
-        $this->ErrorPage404();
     }
 
-  }
+    private function getFullControllerName($name)
+    {
+        return '\Controllers\\' . $name;
+    }
 
-  public function getParams()
-  {
-    return $this->_params;
-  }
-
-  public function getController()
-  {
-    return $this->_controller;
-  }
-
-  public function getAction()
-  {
-    return $this->_action;
-  }
-
-  public function getBody()
-  {
-    return $this->_body;
-  }
-
-  public function setBody($body)
-  {
-    $this->_body = $body;
-  }
-
-  private function getFullControllerName($name)
-  {
-      return "\Controllers\\".$name;
-  }
-
-  public function  ErrorPage404()
-	{
+    public function ErrorPage404()
+    {
         http_response_code(404);
-        include('Views/404.phtml'); // provide your own HTML for the error page
+        include_once('Templates/layouts/404.phtml');
         die();
     }
 }
-?>
