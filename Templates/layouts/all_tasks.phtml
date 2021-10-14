@@ -17,21 +17,12 @@
             </td>
         </tr>
         <?php
-        foreach ($_SESSION["allTasks"] as $tasks) {
+        foreach ($options['allTasks'] as $tasks) {
             echo "<tr>";
             foreach ($tasks as $key => $task) {
-                if ($key == "time_created" || $key == "time_start" || $key == "time_end") {
-                    $task = date("H:i d.m", $task);
-                }
-                if ($tasks["status"] == "выполнено" && $key == "approved_by" && ($_SESSION["login"] == "Мама" || $_SESSION["login"] == "Папа")) {
-                    $task = "<a href='/task/approveTask/id/" . $tasks["id"] . "'>Подтвердить</a>";
-                }
-                if ($key == "img_name") {
-                    $task = "<img src='/Media/images/tasks/" . $task . "' width='50' height='50' alt='$task'>";
-                }
                 echo "<td>" . $task . "</td>";
             }
-            if ($_SESSION["login"] == "Мама") {
+            if ($_SESSION["login"] == "mother") {
                 echo "<td><input type='checkbox' name='" . $tasks['id'] . "' value='" . $tasks['id'] . "'></td>";
             } elseif ($_SESSION["login"] == "Папа") {
                 if (mb_strtolower($tasks["executor"], "UTF-8") == "сын" || mb_strtolower($tasks["executor"], "UTF-8") == "дочь") {

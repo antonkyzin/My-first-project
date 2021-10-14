@@ -1,0 +1,28 @@
+<?php echo isset($errMsg) ? $errMsg : ''?>
+<form action="/user/new" method="post" enctype="multipart/form-data">
+    <label>Логин:</label>
+    <input name="login" type="text" required size="30"/>
+    <br>
+    <label>Пароль:</label>
+    <input name="password" type="password" required size="30"/>
+    <br>
+    <label>Полное имя:</label>
+    <input name="name" type="text" required size="30"/>
+    <br>
+    <label>Член сумьи:</label>
+    <input name="family_member" required type="text" size="30"/>
+    <br>
+    <label>Возраст:</label>
+    <input name="age" type="text" required size="30"/>
+    <br>
+    <label>Адрес:</label>
+    <input name="address" type="text" required size="30"/>
+    <br>
+    <label>Фото:</label>
+    <input name="image" type="file"/>
+    <br>
+    <button type="submit">Зарегистрировать</button>
+</form>
+<form action="/" method="post">
+    <button type="submit">Назад</button>
+</form>

@@ -9,7 +9,7 @@ CREATE TABLE `users` (
 	`family_member` VARCHAR(50) NOT NULL,
 	`age` TINYINT NOT NULL,
 	`address` VARCHAR(100) NOT NULL,
-	`approve_status` TINYINT NOT NULL,
+	`approve_status` TINYINT DEFAULT 0 NOT NULL,
 	`password` VARCHAR(255) NOT NULL,
 	`image` VARCHAR(255),
 	PRIMARY KEY (`id`)
@@ -25,13 +25,12 @@ CREATE TABLE `tasks` (
 	`time_start` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	`time_end` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	`comment` TINYTEXT,
-	`approved_by` INT NOT NULL,
+	`approved_by` INT,
 	`image` VARCHAR(100),
 	PRIMARY KEY (`id`),
-    FOREIGN KEY (`created_by`) REFERENCES `users` (`id`),
-    FOREIGN KEY (`executor`) REFERENCES `users` (`id`),
-    FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`)
-
+    FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`executor`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE CASCADE
 );
 
 INSERT INTO `users` (`login`, `name`, `family_member`, `age`, `address`, `approve_status`, `password`) VALUES

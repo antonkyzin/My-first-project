@@ -1,16 +1,17 @@
 <ul>
     <?php
-    if ($_SESSION["login"] == "Мама" || $_SESSION["login"] == "Папа") {
-        echo "<li><a href='/view/render/opt/newTask'>Создать новую задачу</a></li>";
+    if ($_SESSION["login"] == "mother" || $_SESSION["login"] == "father") {
+        echo "<li><a href='/task/newTask'>Создать новую задачу</a></li>";
     }
     ?>
     <li><a href="/task/getMyTasks">Мои задачи</a></li>
-    <li><a href="/task/getAllTasks">Все задачи</a></li>
+    <li><a href="/task/allTasks">Все задачи</a></li>
     <li><a href="/task/getDoneTasks">Выполненные задачи</a></li>
     <li><a href="/task/getFailTasks">Проваленные задачи</a></li>
     <?php
-    if ($_SESSION["login"] == "Мама" || $_SESSION["login"] == "Папа") {
-        echo "<li><a href='/user/getAllUsers'>Список пользователей</a></li>";
+    $i=0;
+    if ($_SESSION["login"] == "mother" || $_SESSION["login"] == "father") {
+        echo "<li><a href='/user/allUsers'>Список пользователей</a></li>";
     }
     ?>
     <li><a href="/view/render/opt/changeAvatar">Изменить/Удалить аватар</a></li>
