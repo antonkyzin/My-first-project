@@ -3,112 +3,174 @@
 namespace Controllers;
 
 use Models\TaskModel;
+use Models\ViewModel;
 
-class TaskController implements IController
+class TaskController
 {
-    private $model;
-    private $fc;
+    private $taskModel;
+    private $viewModel;
 
     public function __construct()
     {
-        $this->model = new TaskModel();
-        $this->fc = FrontController::getInstance();
+        $this->taskModel = new TaskModel();
+        $this->viewModel = new ViewModel();
+    }
+
+    public function newTaskAction($message = null)
+    {
+        $isSigned = $this->taskModel->isSigned();
+        if ($isSigned) {
+            $usersName = $this->taskModel->selectData('users', ['id', 'name', 'family_member']);
+            $options = [
+                'title' => 'Новое задание',
+                'content' => 'new_task.phtml',
+                'usersName' => $usersName
+            ];
+            $this->viewModel->render($options, $message);
+        } else {
+            $this->viewModel->location('/');
+        }
     }
 
     public function createTaskAction()
     {
-        $imgName = "";
-        if ($_FILES['imageTask']["error"] == UPLOAD_ERR_OK) {
-            $imgName = rand() . $_FILES['imageTask']['name'];
-            move_uploaded_file($_FILES['imageTask']['tmp_name'], 'Media/images/tasks/' . $imgName);
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+            $result = $this->taskModel->createTask($_POST);
+            if ($result) {
+                $this->newTaskAction('Задание успешно создано!');
+            } else {
+                $this->newTaskAction('Задание не создано. Заполните все поля!');
+            }
         }
-        $timeCreated = time();
-        $createdBy = $_POST["created_by"];
-        $executor = $_POST["executor"];
-        $task = $_POST["task"];
-        $status = "новое";
-        $timeStart = time() + (int)$_POST["time_start"] * 3600;
-        $timeEnd = $timeStart + (int)$_POST["time_end"] * 3600;
-        $approvedBy = "Не подтверждена";
-        $res = $this->model->createTask($timeCreated, $createdBy, $executor, $task, $status, $timeStart, $timeEnd, $approvedBy, $imgName);
-        echo $res ? "Задание успешно добавлено!" : "Произошла ошибка. Корректно заполните все поля!";
-        header("Refresh: 3; /view/render/opt/newTask");
     }
 
-    public function getAllTasksAction()
+    public function allTasksAction()
     {
-        $_SESSION["allTasks"] = $this->model->getAllTasks();
-        header("Location: /view/render/opt/allTasks");
+        $isSigned = $this->taskModel->isSigned();
+        if ($isSigned) {
+            $allTasks = $this->taskModel->getAllTasks();
+            $options = [
+                'title' => 'Список заданий',
+                'content' => 'all_tasks.phtml',
+                'allTasks' => $allTasks
+            ];
+            if ($allTasks) {
+                $this->viewModel->render($options);
+            } else {
+                $errMsg = 'Задания отсутствуют';
+                $this->viewModel->render($options, $errMsg);
+            }
+        } else {
+            $this->viewModel->location('/');
+        }
     }
 
     public function deleteTaskAction()
     {
-        $id = implode(",", $_POST);
-        $this->model->deleteTask($id);
-        header("Location: /task/getAllTasks");
-    }
-
-    public function approveTaskAction()
-    {
-        $params = $this->fc->getParams();
-        $res = $this->model->approveTask($params["id"]);
-        if ($res) {
-            header("Location: /task/getAllTasks");
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+            $result = $this->taskModel->deleteTask($_POST);
+            if ($result) {
+                $this->viewModel->location('/task/allTasks');
+            }
         }
     }
 
     public function updateTaskAction()
     {
-        $id = $_POST["id"];
-        $task = $_POST["task"];
-        $res = $this->model->updateTask($id, $task);
-        if ($res) {
-            header("Location: /task/getAllTasks");
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+            $result = $this->taskModel->updateTask($_POST);
+            if ($result) {
+                $this->viewModel->location('/task/allTasks');
+            }
         }
-        echo "Изменение не выполнено";
-        header("Refresh:3; /task/getAllTasks");
     }
 
-    public function getMyTasksAction()
+    public function myTasksAction()
     {
-        $executor = $_SESSION["login"];
-        $_SESSION["myTasks"] = $this->model->getMyTasks($executor);
-        header("Location: /view/render/opt/myTasks");
+        $isSigned = $this->taskModel->isSigned();
+        if ($isSigned) {
+            $myTasks = $this->taskModel->getMyTasks();
+            if ($myTasks) {
+                $options = [
+                    'title' => 'Список заданий',
+                    'content' => 'my_tasks.phtml',
+                    'myTasks' => $myTasks
+                ];
+                $this->viewModel->render($options);
+            }
+        } else {
+            $this->viewModel->location('/');
+        }
     }
 
     public function userExecTaskAction()
     {
-        $comment = $_POST["comment"];
-        $id = $_POST["id"];
-        $res = $this->model->userExecTask($id, $comment);
-        if ($res) {
-            header("Location: /task/getMyTasks");
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+            $result = $this->taskModel->execTask($_POST);
+            if ($result) {
+                $this->viewModel->location('/task/myTasks');
+            }
         }
-        echo "Изменение не выполнено";
-        header("Refresh:3; /task/getAllTasks");
     }
 
     public function getDoneTasksAction()
     {
-        $_SESSION["doneTasks"] = $this->model->getDoneTasks();
-        header("Location: /view/render/opt/doneTasks");
+        $isSigned = $this->taskModel->isSigned();
+        if ($isSigned) {
+            $doneTasks = $this->taskModel->getDoneTasks();
+            $options = ['title' => 'Список заданий',
+                'content' => 'done_tasks.phtml',
+                'doneTasks' => $doneTasks
+            ];
+            if ($doneTasks) {
+                $this->viewModel->render($options);
+            } else {
+                $errMsg = 'Нету выполненных заданий';
+                $this->viewModel->render($options, $errMsg);
+            }
+        } else {
+            $this->viewModel->location('/');
+        }
     }
 
     public function getFailTasksAction()
     {
-        $_SESSION["failTasks"] = $this->model->getFailTasks();
-        header("Location: /view/render/opt/failTasks");
-
+        $isSigned = $this->taskModel->isSigned();
+        if ($isSigned) {
+            $failTasks = $this->taskModel->getFailTasks();
+            $options = [
+                'title' => 'Список заданий',
+                'content' => 'fail_tasks.phtml',
+                'failTasks' => $failTasks
+            ];
+            if ($failTasks) {
+                $this->viewModel->render($options);
+            } else {
+                $errMsg = 'Нету проваленных заданий';
+                $this->viewModel->render($options, $errMsg);
+            }
+        } else {
+            $this->viewModel->location('/');
+        }
     }
 
     public function restartTaskAction()
     {
-        $timeStart = time() + (int)$_POST["timeStart"] * 3600;
-        $timeEnd = $timeStart + (int)$_POST["timeEnd"] * 3600;
-        $id = $_POST["id"];
-        $res = $this->model->restartTask($id, $timeStart, $timeEnd);
-        if ($res){
-            header("Location: /task/getFailTasks");
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+            $result = $this->taskModel->restartTask($_POST);
+            if ($result) {
+                $this->viewModel->location('/task/getFailTasks');
+            }
+        }
+    }
+
+    public function approveTaskAction()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+            $result = $this->taskModel->approveTask($_POST);
+            if ($result) {
+                $this->viewModel->location('/task/getDoneTasks');
+            }
         }
     }
 }

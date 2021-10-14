@@ -2,76 +2,102 @@
 
 namespace Models;
 
-class TaskModel
+class TaskModel extends DatabaseModel
 {
-    public function __construct()
+    const STATUS_NEW = 3;
+    const STATUS_DONE = 2;
+    const STATUS_APPROVE = 1;
+    const STATUS_FAIL = 0;
+
+    public function createTask($data)
     {
-        $this->pdo = new \PDO('mysql:host=test.local;dbname=Family', 'snuff', 'kyzmi4');
+        if ($_FILES['image']["error"] == UPLOAD_ERR_OK) {
+            $data['image'] = rand() . $_FILES['image']['name'];
+            move_uploaded_file($_FILES['image']['tmp_name'], 'Media/images/tasks/' . $data['image']);
+        }
+        $data['time_end'] = date("Y-m-d H:i:s", time() + 3600 * $data['time_end']);
+        $data['status'] = self::STATUS_NEW;
+        return $this->insertData('tasks', $data);
     }
 
-    public function createTask($timeCreated, $createdBy, $executor, $task, $status, $timeStart, $timeEnd, $approvedBy, $imgName)
+    public function getAllTasks($whereCondition = null)
     {
-        $sql = "INSERT INTO Tasks (time_created, created_by, executor, task, status, time_start, time_end, approved_by, img_name) 
-                VALUES ('$timeCreated', '$createdBy', '$executor', '$task', '$status', '$timeStart', '$timeEnd', '$approvedBy', '$imgName')";
-        if ($this->pdo->exec($sql)){
-            return true;
-        }
-        return false;
+        $field = [
+            't.id', 'time_created', 'u1.name AS created_by', 'u2.name AS executor', 'task',
+            'status', 'time_start', 'time_end', 'comment', 'u3.name AS approved_by', 't.image'
+        ];
+        $joinCondition = [
+            'created_by' => 'u1.id',
+            'executor' => 'u2.id',
+            'approved_by' => 'u3.id'
+        ];
+        $this->isTaskActive();
+        return $this->selectJoinData('tasks', 'users', $field, $joinCondition, $whereCondition);
     }
 
-    public function getAllTasks(){
-        $sql = "SELECT * from Tasks";
-        $result = $this->pdo->query($sql);
-        return $result->fetchAll(\PDO::FETCH_ASSOC);
+    public function deleteTask(array $data)
+    {
+        $id = implode(',', $data);
+        return $this->deleteData('tasks', $id);
     }
 
-    public function deleteTask($id){
-        foreach ($_SESSION["allTasks"] as $task){
-            if ($task["id"] == $id){
-                unlink("Media/images/tasks/" . $task["img_name"]);
-            }
-        }
-        $sql = "DELETE FROM Tasks WHERE id IN ($id)";
-        $this->pdo->exec($sql);
+    public function updateTask($data)
+    {
+        $field = ['task' => $data['task']];
+        $condition = '`id` = ' . $data['id'];
+        return $this->updateData('tasks', $field, $condition);
     }
 
-    public function approveTask($id){
-        $name = $_SESSION["login"];
-        $sql = "UPDATE Tasks SET status='Подтверждено', approved_by='$name' WHERE id='$id'";
-      return  $this->pdo->exec($sql);
+    public function getMyTasks()
+    {
+        $whereCondition = '`executor` = ' . $_SESSION['id'];
+        return $this->getAllTasks($whereCondition);
     }
 
-    public function updateTask($id, $task){
-        $sql = "UPDATE Tasks SET task='$task' WHERE id='$id'";
-        return  $this->pdo->exec($sql);
+    public function execTask($data)
+    {
+        $filed = [
+            'status' => self::STATUS_DONE,
+            'comment' => $data['comment']
+        ];
+        $condition = '`id` = ' . $data['id'];
+        return $this->updateData('tasks', $filed, $condition);
     }
 
-    public function getMyTasks($executor){
-        $sql = "SELECT * FROM Tasks WHERE executor = '$executor' AND status !='выполнено' AND status !='подтверждено'";
-        $result = $this->pdo->query($sql);
-        return $result->fetchAll(\PDO::FETCH_ASSOC);
+    public function getDoneTasks()
+    {
+        $whereCondition = '`status` = ' . self::STATUS_DONE;
+        return $this->getAllTasks($whereCondition);
     }
 
-    public function userExecTask($id, $comment){
-        $sql = "UPDATE Tasks SET status='выполнено', comment='$comment' WHERE id='$id'";
-        return  $this->pdo->exec($sql);
+    public function isTaskActive()
+    {
+        $field = ['status' => self::STATUS_FAIL];
+        $condition = '`time_end` < NOW()';
+        return $this->updateData('tasks', $field, $condition);
     }
 
-    public function getDoneTasks(){
-        $sql = "SELECT * FROM Tasks WHERE status ='выполнено' OR status ='Подтверждено'";
-        $result = $this->pdo->query($sql);
-        return $result->fetchAll(\PDO::FETCH_ASSOC);
+    public function getFailTasks()
+    {
+        $whereCondition = '`status` = ' . self::STATUS_FAIL;
+        return $this->getAllTasks($whereCondition);
     }
 
-    public function getFailTasks(){
-        $time = time();
-        $sql = "SELECT * FROM Tasks WHERE time_end < $time AND status !='выполнено' AND status !='подтверждено'";
-        $result = $this->pdo->query($sql);
-        return $result->fetchAll(\PDO::FETCH_ASSOC);
+    public function restartTask($data)
+    {
+        $data['time_end'] = date("Y-m-d H:i:s", time() + 3600 * $data['time_end']);
+        $field = [
+            'time_end' => $data['time_end'],
+            'status' => self::STATUS_NEW
+        ];
+        $condition = '`id` = ' . $data['id'];
+        return $this->updateData('tasks', $field, $condition);
     }
 
-    public function restartTask($id, $timeStart, $timeEnd){
-        $sql = "UPDATE Tasks SET time_start='$timeStart', time_end = '$timeEnd' WHERE id='$id'";
-        return  $this->pdo->exec($sql);
+    public function approveTask($data)
+    {
+        $field = ['status' => self::STATUS_APPROVE];
+        $condition = '`id` = '. $data['id'];
+        return $this->updateData('tasks', $field, $condition);
     }
 }
