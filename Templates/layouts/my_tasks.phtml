@@ -1,6 +1,6 @@
 <?php
 ?>
-<table border='1'>
+<table border="1">
     <tr>
         <td>id</td>
         <td>Время создания</td>
@@ -26,18 +26,18 @@
     <?php endforeach; ?>
 </table>
 
-<form action='/task/userExecTask' method='post'>
+<form action="/task/userExecTask" method="post">
     <label>Заявить о выполнении задания:</label>
     <p>
-        <select multiple name='id'>
+        <select multiple name="id">
             <option disabled>Выберите id задания</option>
             <?php
             foreach ($options['myTasks'] as $tasks): ?>
-                <option value='<?= $tasks['id'] ?>'> <?= $tasks['id'] ?></option>
+                <option value="<?= $tasks['id'] ?>"> <?= $tasks['id'] ?></option>
             <?php endforeach; ?>
         </select>
     </p>
     <label>Комментарий(опционально):</label>
-    <input name='comment' type='text' size='30'/>
-    <input type='submit' value='Отправить'>
+    <input name="comment" type="text" size="30"/>
+    <input type="submit" value="Отправить">
 </form>

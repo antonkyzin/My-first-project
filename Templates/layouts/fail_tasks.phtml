@@ -1,5 +1,5 @@
 <?php echo isset($errMsg) ? $errMsg : '' ?>
-<table border='1'>
+<table border="1">
     <tr>
         <td>id</td>
         <td>Время создания</td>
@@ -17,7 +17,7 @@
         <tr>
             <?php foreach ($tasks as $key => $task):
                 if ($key == 'image'): ?>
-                    <img src='/Media/images/tasks/<?= $task ?>' width='50' height='50' alt='$task'>
+                    <img src="/Media/images/tasks/<?= $task ?>" width="50" height="50" alt="$task">
                 <?php endif; ?>
                 <td><?= $task ?></td>
             <?php endforeach; ?>
@@ -25,20 +25,20 @@
     <?php endforeach; ?>
 </table>
 
-<form action='/task/restartTask' method='post'>
+<form action="/task/restartTask" method="post">
     <label>Возобновить задание:</label>
     <p>
-        <select multiple name='id'>
+        <select multiple name="id">
             <option disabled>Выберите id задания</option>
             <?php if ($options['login'] == 'mother'):
                 foreach ($options['failTasks'] as $tasks): ?>
-                    <option value='<?= $tasks['id'] ?>'><?= $tasks['id'] ?></option>
+                    <option value="<?= $tasks['id'] ?>"><?= $tasks['id'] ?></option>
                 <?php endforeach;
             endif; ?>
         </select>
     </p>
     <label>Через сколько закончится:</label>
-    <input name='time_end' type='text' size='30'/>
+    <input name="time_end" type="text" size="30"/>
     <br>
-    <input type='submit' value='Отправить'>
+    <input type="submit" value="Отправить">
 </form>
