@@ -6,7 +6,7 @@ class FrontController
 {
     protected $controller;
     protected $action, $params;
-    static $instance;
+    public static $instance;
 
     public static function getInstance()
     {
@@ -22,7 +22,7 @@ class FrontController
         $splits = explode('/', trim($request, '/'));
         $this->controller = !empty($splits[0]) ?
             $this->getFullControllerName(ucfirst($splits[0]) . 'Controller')
-            : $this->getFullControllerName('ViewController');
+            : $this->getFullControllerName('IndexController');
         $this->action = !empty($splits[1]) ? $splits[1] . 'Action' : 'indexAction';
         if (!empty($splits[2])) {
             $keys = $values = [];
