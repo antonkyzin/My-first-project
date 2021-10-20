@@ -1,5 +1,8 @@
-<?php
-?>
+<?php /**
+ * @var $options array
+ * @var $this \View\TaskView
+ */ ?>
+<?php echo isset($errMsg) ? $errMsg : '' ?>
 <table border="1">
     <tr>
         <td>id</td>
@@ -14,13 +17,12 @@
         <td>Подтверждено кем</td>
         <td>Изображение</td>
     </tr>
-    <?php foreach ($options['myTasks'] as $tasks): ?>
+    <?php foreach ($options['myTasks'] as $task): ?>
         <tr>
-            <?php foreach ($tasks as $key => $task):
-                if ($key == 'image'):
-                    $task = '<img src=\'/Media/images/tasks/' . $task . "' width='50' height='50' alt='$task'>";
-                endif; ?>
-                <td><?= $task ?></td>
+            <?php foreach ($task as $key => $value): ?>
+                <?php if ($key == 'family_member'): continue; ?>
+                <?php endif; ?>
+                <td><?= $this->renderTaskElement($key, $value) ?></td>
             <?php endforeach; ?>
         </tr>
     <?php endforeach; ?>
@@ -31,9 +33,10 @@
     <p>
         <select multiple name="id">
             <option disabled>Выберите id задания</option>
-            <?php
-            foreach ($options['myTasks'] as $tasks): ?>
-                <option value="<?= $tasks['id'] ?>"> <?= $tasks['id'] ?></option>
+            <?php foreach ($options['myTasks'] as $task): ?>
+                <?php if ($task['status'] == 3): ?>
+                    <option value="<?= $task['id'] ?>"> <?= $task['id'] ?></option>
+                <?php endif; ?>
             <?php endforeach; ?>
         </select>
     </p>

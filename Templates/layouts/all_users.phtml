@@ -1,3 +1,7 @@
+<?php /**
+ * @var $this \View\UserView
+ * @var $options array
+ */ ?>
 <form action="/user/delete" method="post">
     <table border="1">
         <tr>
@@ -12,24 +16,14 @@
                 <button type="submit">Удалить</button>
             </td>
         </tr>
-
-        <?php foreach ($options['allUsers'] as $users): ?>
+        <?php foreach ($options['allUsers'] as $user): ?>
             <tr>
-                <?php foreach ($users as $key => $user): ?>
-                    <?php if ($key == 'image'):
-                        $user = '<img src=\'/Media/images/users/' . $user . "' width='50' height='50' alt='$user'>";
-                    elseif ($key == 'approve_status'):
-                        $user = ($user == '1') ? 'подтверждён' : 'не подтверждён';
-                    endif; ?>
-                    <td> <?= $user ?> </td>
-                <?php endforeach;
-                if ($options['login'] == 'mother'):?>
-                    <td><input type="checkbox" name="<?= $users['id'] ?>" value="<?= $users['id'] ?>"></td>
-                <?php elseif ($options['login'] == 'father'):
-                    if (mb_strtolower($users['family_member'], 'UTF-8') == 'сын' || mb_strtolower($users['family_member'], 'UTF-8') == 'дочь'): ?>
-                        <td><input type="checkbox" name="<?= $users['id'] ?>" value="<?= $users['id'] ?>"></td>
-                    <?php endif;
-                endif; ?>
+                <?php foreach ($user as $key => $value): ?>
+                    <td><?= $this->renderUserElement($key, $value) ?></td>
+                <?php endforeach; ?>
+                <?php if ($this->renderCheckbox($options['login'], $user['family_member'])): ?>
+                    <td><input type="checkbox" name="<?= $user['id'] ?>" value="<?= $user['id'] ?>"></td>
+                <?php endif; ?>
             </tr>
         <?php endforeach; ?>
     </table>
@@ -41,15 +35,13 @@
     <p>
         <select multiple name="id">
             <option disabled>Выберите пользователя</option>
-            <?php if ($options['login'] == 'mother'):
-                foreach ($options['allUsers'] as $users): ?>
-                    <option value="<?= $users['id'] ?>"><?= $users['name'] ?> </option>;
-                <?php endforeach;
-            endif;
-            ?>
+            <?php if ($options['login'] == 'mother'): ?>
+                <?php foreach ($options['allUsers'] as $user): ?>
+                    <option value="<?= $user['id'] ?>"><?= $user['name'] ?> </option>;
+                <?php endforeach; ?>
+            <?php endif; ?>
         </select>
     </p>
-
     <input name="status" type="text" size="30"/>
     <input type="submit" value="Отправить">
 </form>
@@ -61,17 +53,11 @@
     <p>
         <select multiple name="id">
             <option disabled>Выберите пользователя</option>
-            <?php foreach ($options['allUsers'] as $users):
-                if ($users['approve_status'] == 0):
-                    if ($options['login'] == 'mother'): ?>
-                        <option value="<?= $users['id'] ?>"><?= $users['name'] ?> </option>
-                    <?php elseif ($options['login'] == 'father'):
-                        if (mb_strtolower($users['family_member'], 'UTF-8') == 'сын' || mb_strtolower($users['family_member'], 'UTF-8') == 'дочь'): ?>
-                            <option value="<?= $users['id'] ?>"><?= $users['name'] ?> </option>
-                        <?php endif;
-                    endif;
-                endif;
-            endforeach; ?>
+            <?php foreach ($options['allUsers'] as $user): ?>
+                <?php if ($this->renderCheckbox($options['login'], $user['family_member']) && $user['approve_status'] == 0): ?>
+                    <option value="<?= $user['id'] ?>"><?= $user['name'] ?> </option>
+                <?php endif; ?>
+            <?php endforeach; ?>
         </select>
     </p>
     <input type="submit" value="Отправить">

@@ -1,3 +1,6 @@
+<?php /** @var $options array
+ * @var $this \View\TaskView
+ */ ?>
 <?php echo isset($errMsg) ? $errMsg : '' ?>
 <table border="1">
     <tr>
@@ -13,13 +16,12 @@
         <td>Подтверждено кем</td>
         <td>Изображение</td>
     </tr>
-    <?php foreach ($options['doneTasks'] as $tasks): ?>
+    <?php foreach ($options['doneTasks'] as $task): ?>
         <tr>
-            <?php foreach ($tasks as $key => $task):
-                if ($key == 'image'):
-                    $task = '<img src=\'/Media/images/tasks/' . $task . "' width='50' height='50' alt='$task'>";
-                endif; ?>
-                <td><?= $task ?></td>
+            <?php foreach ($task as $key => $value): ?>
+                <?php if ($key == 'family_member'): continue; ?>
+                <?php endif; ?>
+                <td><?= $this->renderTaskElement($key, $value) ?></td>
             <?php endforeach; ?>
         </tr>
     <?php endforeach; ?>
@@ -30,16 +32,11 @@
     <p>
         <select multiple name="id">
             <option disabled>Выберите id задания</option>
-            <?php foreach ($options['doneTasks'] as $tasks):
-                if ($options['login'] == 'mother'): ?>
-                    <option value="<?= $tasks['id'] ?>"><?= $tasks['id'] ?></option>
-                <?php elseif ($options['login'] == 'father'):
-                    if (mb_strtolower($tasks['executor'], 'UTF-8') == 'сын' || mb_strtolower($tasks['executor'], 'UTF-8') == 'дочь'): ?>
-                        <option value="<?= $tasks['id'] ?>"><?= $tasks['id'] ?></option>
-                    <?php endif;
-                endif;
-            endforeach;
-            ?>
+            <?php foreach ($options['doneTasks'] as $task): ?>
+                <?php if ($this->renderCheckbox($options['login'], $task['family_member'])): ?>
+                    <option value="<?= $task['id'] ?>"><?= $task['id'] ?></option>
+                <?php endif; ?>
+            <?php endforeach; ?>
         </select>
     </p>
     <input type="submit" value="Отправить">

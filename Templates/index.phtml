@@ -1,39 +1,24 @@
+<?php /** @var $options array */ ?>
 <!DOCTYPE html>
 <html>
 
 <head>
     <title><?php echo $options['title'] ?></title>
-    <style type="text/css">
-        #footer {
-            position: fixed;
-            left: 0;
-            bottom: 0;
-            padding: 10px;
-            width: 100%;
-            text-align: center;
-        }
-
-        #header {
-            padding: 10px;
-            width: 100%;
-        }
-    </style>
+    <link href="/Templates/styles/style.css" rel="stylesheet">
 </head>
 
 <body>
-<div id="header">
-    <?php include_once('layouts/' . $options['header']) ?>
+<div class="header">
+    <?php include_once($options['header']) ?>
 </div>
 <div>
     <?php if (isset($options['menu'])) {
-        include_once('layouts/' . $options['menu']);
+        include_once($options['menu']);
     } ?>
-    <?php if ($options['content']) {
-        include_once('layouts/' . $options['content']);
-    } ?>
+    <?php include_once($options['content']) ?>
 </div>
-<div id="footer">
-    <?php include_once('layouts/' . $options['footer']) ?>
+<div class="footer">
+    <?php include_once($options['footer']) ?>
 </div>
 </body>
 </html>

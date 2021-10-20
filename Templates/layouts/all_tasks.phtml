@@ -1,4 +1,16 @@
+<?php /**
+ * @var $options array
+ * @var $this \View\TaskView
+ */ ?>
+
 <?php echo isset($errMsg) ? $errMsg : '' ?>
+<?php if ($options['login'] == 'mother'): ?>
+    <p>
+    <form action="/task/updateTaskStatus" method="post">
+        <button type="submit">Обновить статус заданий</button>
+    </form>
+    </p>
+<?php endif; ?>
 <form action="/task/deleteTask" method="post">
     <table border="1">
         <tr>
@@ -17,45 +29,34 @@
                 <button type="submit">Удалить</button>
             </td>
         </tr>
-        <?php foreach ($options['allTasks'] as $tasks): ?>
+        <?php foreach ($options['allTasks'] as $task): ?>
             <tr>
-            <?php foreach ($tasks as $key => $task):
-                if ($key == 'image'):
-                    $task = '<img src=\'/Media/images/tasks/' . $task . "' width='50' height='50' alt='$task'>";
-                endif; ?>
-                <td><?= $task ?></td>
-            <?php endforeach;
-            if ($options['login'] == 'mother'): ?>
-                <td><input type="checkbox" name="<?= $tasks['id'] ?>" value="<?= $tasks['id'] ?>"></td>
-            <?php elseif ($options['login'] == 'father'):
-                if (mb_strtolower($tasks['executor'], 'UTF-8') == 'сын' || mb_strtolower($tasks['executor'], 'UTF-8') == 'дочь'): ?>
-                    <td><input type="checkbox" name="<?= $tasks['id'] ?>" value="<?= $tasks['id'] ?>"></td>
+                <?php foreach ($task as $key => $value): ?>
+                    <?php if ($key == 'family_member'): continue; ?>
+                    <?php endif; ?>
+                    <td><?= $this->renderTaskElement($key, $value) ?></td>
+                <?php endforeach; ?>
+                <?php if ($this->renderCheckbox($options['login'], $task['family_member'])): ?>
+                    <td><input type="checkbox" name="<?= $task['id'] ?>" value="<?= $task['id'] ?>"></td>
                 <?php endif; ?>
-                </tr>
-            <?php endif;
-        endforeach; ?>
+            </tr>
+        <?php endforeach; ?>
     </table>
 </form>
-
+<p>
 <form action="/task/updateTask" method="post">
     <label>Изменить задание:</label>
     <p>
         <select multiple name="id">
             <option disabled>Выберите id задания</option>
-            <?php if ($options['login'] == 'mother'):
-                foreach ($options['allTasks'] as $tasks): ?>
-                    <option value="<?= $tasks['id'] ?>"><?= $tasks['id'] ?></option>
-                <?php endforeach;
-            elseif ($options['login'] == 'father'):
-                foreach ($options['allTasks'] as $tasks):
-                    if (mb_strtolower($tasks['executor'], 'UTF-8') == 'сын' || mb_strtolower($tasks['executor'], 'UTF-8') == 'дочь'): ?>
-                        <option value="<?= $tasks['id'] ?>"><?= $tasks['id'] ?></option>
-                    <?php endif;
-                endforeach;
-            endif;
-            ?>
+            <?php foreach ($options['allTasks'] as $task): ?>
+                <?php if ($this->renderCheckbox($options['login'], $task['family_member'])): ?>
+                    <option value="<?= $task['id'] ?>"><?= $task['id'] ?></option>
+                <?php endif; ?>
+            <?php endforeach; ?>
         </select>
     </p>
     <input name="task" type="text" size="30"/>
     <input type="submit" value="Отправить">
 </form>
+</p>

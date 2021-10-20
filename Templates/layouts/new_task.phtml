@@ -1,29 +1,26 @@
-<?php echo isset($errMsg) ? $errMsg : ''?>
+<?php /**
+ * @var $options array
+ * @var $this \View\UserView
+ */ ?>
+<?php echo isset($errMsg) ? $errMsg : '' ?>
 <form action="/task/createTask" method="post" enctype="multipart/form-data">
     <label></label>
-    <input type="text" name="created_by" value="<?= $_SESSION['login']=='mother' ? 1 :2 ?>" hidden>
+    <input type="text" name="created_by" value="<?= $_SESSION['login'] == 'mother' ? 1 : 2 ?>" hidden>
     <br>
     <label>Исполнитель:</label>
     <select multiple name="executor" required>
-        <?php foreach ($options['usersName'] as $users):
-            if ($options['login'] == 'father'):
-                if (mb_strtolower($users['family_member'], 'UTF-8') == 'сын' || mb_strtolower($users['family_member'], 'UTF-8') == 'дочь'): ?>
-                    <option value="<?= $users['id'] ?>"><?= $users['name'] ?></option>
-                <?php endif;
-                continue;
-            endif;
-            if ($users['family_member'] != 'мама'): ?>
-                <option value="<?= $users['id'] ?>"><?= $users['name'] ?></option>";
-            <?php endif;
-        endforeach;
-        ?>
+        <?php foreach ($options['usersName'] as $user):
+            if ($user['family_member'] != 'мама' && $this->renderCheckbox($options['login'], $user['family_member'])): ?>
+                <option value="<?= $user['id'] ?>"><?= $user['name'] ?></option>
+            <?php endif; ?>
+        <?php endforeach; ?>
     </select>
     <br>
     <label>Задание:</label>
     <input name="task" type="text" size="30" required/>
     <br>
-    <label>Сколько часов на выполнение:</label>
-    <input name="time_end" type="text" size="30" required/>
+    <label>Когда закончится:</label>
+    <input name="time_end" type="datetime-local" required/>
     <br>
     <label>Фото к задаче:</label>
     <input name="image" type="file"/>
