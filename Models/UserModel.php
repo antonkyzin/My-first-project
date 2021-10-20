@@ -2,7 +2,7 @@
 
 namespace Models;
 
-class UserModel extends DatabaseModel
+class UserModel extends DataModel
 {
     public function login($login, $password)
     {
@@ -32,8 +32,7 @@ class UserModel extends DatabaseModel
         }
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
         if ($_FILES['image']['error'] == UPLOAD_ERR_OK) {
-            $data['image'] = rand() . $_FILES['image']['name'];
-            move_uploaded_file($_FILES['image']['tmp_name'], 'Media/images/users/' . $data['image']);
+            $data['image'] = $this->moveUploadFile('users');
         } else {
             $data['image'] = 'standart_avatar.jpg';
         }
@@ -53,6 +52,7 @@ class UserModel extends DatabaseModel
     public function deleteUser(array $data)
     {
         $id = implode(',', $data);
+        $this->deleteFile('users', $id, 'users');
         return $this->deleteData('users', $id);
     }
 
@@ -73,19 +73,16 @@ class UserModel extends DatabaseModel
 
     public function changeAvatar()
     {
-        $imgName = '';
         if ($_FILES['image']['error'] == UPLOAD_ERR_OK) {
             $field = ['login', 'image'];
             $login = $_SESSION['login'];
             $condition = "`login` = '$login'";
             $user = $this->selectData('users', $field, $condition);
-            if (isset($user[0]['image'])) {
-                $imgName = $user[0]['image'];
-                move_uploaded_file($_FILES['image']['tmp_name'], 'Media/images/users/' . $imgName);
+            if (isset($user[0]['image']) && $user[0]['image'] != 'standart_avatar.jpg') {
+                $imgName = $this->moveUploadFile('users', $user[0]['image']);
                 return true;
             } else {
-                $imgName = rand() . $_FILES['image']['name'];
-                move_uploaded_file($_FILES['image']['tmp_name'], 'Media/images/users/' . $imgName);
+                $imgName = $this->moveUploadFile('users');
                 $field = ['image' => $imgName];
                 return $this->updateData('users', $field, $condition);
             }
@@ -95,13 +92,9 @@ class UserModel extends DatabaseModel
 
     public function deleteAvatar()
     {
-        $field = ['login', 'image'];
-        $login = $_SESSION['login'];
-        $condition = "`login` = '$login'";
-        $user = $this->selectData('users', $field, $condition);
-        $imgName = $user[0]["image"];
-        unlink("Media/images/users/" . $imgName);
+        $this->deleteFile('users', $_SESSION['id'], 'users');
         $field = ['image' => 'standart_avatar.jpg'];
+        $condition = "`id` = " . $_SESSION['id'];
         return $this->updateData('users', $field, $condition);
     }
 }

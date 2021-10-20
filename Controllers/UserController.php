@@ -3,47 +3,49 @@
 namespace Controllers;
 
 use Models\UserModel;
-use Models\ViewModel;
+use View\UserView;
 
 class UserController
 {
     private $userModel;
-    private $viewModel;
+    private $userView;
 
     public function __construct()
     {
         $this->userModel = new UserModel();
-        $this->viewModel = new ViewModel();
+        $this->userView = new UserView();
     }
 
     public function loginAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
             $login = $_POST['login'];
             $password = $_POST['password'];
             $result = $this->userModel->login($login, $password);
             switch ($result) {
                 case 1 :
-                    $this->viewModel->location('/');
+                    $this->userView->location('/');
                     break;
                 case 2 :
                     $errMsg = 'Мама пока не дала разрешение на вход!';
-                    $this->viewModel->render(null, $errMsg);
+                    $this->userView->render(null, $errMsg);
                     break;
                 case 0 :
                     $errMsg = 'Неверный логин или пароль!';
-                    $this->viewModel->render(null, $errMsg);
+                    $this->userView->render(null, $errMsg);
             }
         } else {
             $errMsg = 'Простите, но что-то пошло не так. Попробуйте еще раз';
-            $this->viewModel->render(null, $errMsg);
+            $this->userView->render(null, $errMsg);
         }
     }
 
     public function logoutAction()
     {
-        session_destroy();
-        $this->viewModel->location('/');
+        if ($this->userModel->isSigned()) {
+            session_destroy();
+        }
+        $this->userView->location('/');
     }
 
     public function registrationAction($errMsg = null)
@@ -54,24 +56,25 @@ class UserController
                 'title' => 'Регистрация',
                 'content' => 'registration.phtml'
             ];
-            $this->viewModel->render($options, $errMsg);
+            $this->userView->render($options, $errMsg);
         } else {
-            $this->viewModel->location('/');
+            $this->userView->location('/');
         }
     }
 
     public function newAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
             $result = $this->userModel->newUser($_POST);
         }
         if ($result === 'exist') {
-            $this->registrationAction('Пользователь с таким логином уже зарегистрирован.');
+            $message = ('Пользователь с таким логином уже зарегистрирован.');
         } elseif ($result) {
-            $this->registrationAction('Вы успешно зарегистрировались. Ожидайте подтверждения от мамы.');
+            $message = ('Вы успешно зарегистрировались. Ожидайте подтверждения от мамы.');
         } else {
-            $this->registrationAction('Произошла ошибка. Вы ввели некорректные данные.');
+            $message = ('Произошла ошибка. Вы ввели некорректные данные.');
         }
+        $this->registrationAction($message);
     }
 
     public function allUsersAction()
@@ -79,43 +82,44 @@ class UserController
         $isSigned = $this->userModel->isSigned();
         if ($isSigned) {
             $allUsers = $this->userModel->getAllUsers();
+            $i = 0;
             $options = [
                 'title' => 'Список пользователей',
                 'content' => 'all_users.phtml',
                 'allUsers' => $allUsers
             ];
-            $this->viewModel->render($options);
+            $this->userView->render($options);
         } else {
-            $this->viewModel->location('/');
+            $this->userView->location('/');
         }
     }
 
     public function deleteAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
             $result = $this->userModel->deleteUser($_POST);
             if ($result) {
-                $this->viewModel->location('/user/allUsers');
+                $this->userView->location('/user/allUsers');
             }
         }
     }
 
     public function updateUserAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
             $result = $this->userModel->updateUser($_POST);
             if ($result) {
-                $this->viewModel->location('/user/allUsers');
+                $this->userView->location('/user/allUsers');
             }
         }
     }
 
     public function approveUserAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST)) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
             $result = $this->userModel->approveUser($_POST);
             if ($result) {
-                $this->viewModel->location('/user/allUsers');
+                $this->userView->location('/user/allUsers');
             }
         }
     }
@@ -128,9 +132,9 @@ class UserController
                 'title' => 'Аватар',
                 'content' => 'change_avatar.phtml'
             ];
-            $this->viewModel->render($options, $errMsg);
+            $this->userView->render($options, $errMsg);
         } else {
-            $this->viewModel->location('/');
+            $this->userView->location('/');
         }
     }
 
@@ -140,13 +144,13 @@ class UserController
         if ($isSigned) {
             $result = $this->userModel->changeAvatar();
             if ($result) {
-                $this->viewModel->location('/user/avatarForm');
+                $errMsg = 'Аватар успешно изменён';
             } else {
                 $errMsg = 'Произошла ошибка';
-                $this->avatarFormAction($errMsg);
             }
+            $this->avatarFormAction($errMsg);
         } else {
-            $this->viewModel->location('/');
+            $this->userView->location('/');
         }
     }
 
@@ -157,10 +161,12 @@ class UserController
             $result = $this->userModel->deleteAvatar();
             if ($result) {
                 $errMsg = 'Аватар успешно удалён';
-                $this->avatarFormAction($errMsg);
+            } else {
+                $errMsg = 'У вас стандартный аватар';
             }
+            $this->avatarFormAction($errMsg);
         } else {
-            $this->viewModel->location('/');
+            $this->userView->location('/');
         }
     }
 }
