@@ -2,7 +2,7 @@
 
 namespace Models;
 
-class DatabaseModel
+class DataModel
 {
     protected $pdo;
 
@@ -97,16 +97,13 @@ class DatabaseModel
         $sql .= "FROM {$fromTable} {$aliasFromTable}";
         $i = 1;
         foreach ($joinCondition as $key => $value) {
-            if ($i == count($joinCondition) && !$whereCondition) {
-                $sql .= " LEFT JOIN  $joinTable $aliasJoinTable" . $i . " ON $key = $value;";
-                break;
-            }
             $sql .= " LEFT JOIN  $joinTable $aliasJoinTable" . $i . " ON $key  = $value ";
             $i++;
         }
         if ($whereCondition) {
             $sql .= " WHERE {$whereCondition}";
         }
+        $sql = trim($sql);
         try {
             $result = $this->pdo->query($sql);
             return $result->fetchAll();
@@ -135,5 +132,24 @@ class DatabaseModel
     public function isSigned()
     {
         return isset($_SESSION['login']);
+    }
+
+    public function moveUploadFile($folder, $fileName = null)
+    {
+        $fileName = $fileName ?? rand() . $_FILES['image']['name'];
+        move_uploaded_file($_FILES['image']['tmp_name'], "Media/images/$folder/" . $fileName);
+        return $fileName;
+    }
+
+    public function deleteFile($table, $id, $folder)
+    {
+        $field = ['image'];
+        $condition = "`id` IN ($id)";
+        $avatars = $this->selectData($table, $field, $condition);
+        foreach ($avatars as $avatar) {
+            if (isset($avatar['image']) && $avatar['image'] != 'standart_avatar.jpg') {
+                unlink("Media/images/$folder/" . $avatar['image']);
+            }
+        }
     }
 }
