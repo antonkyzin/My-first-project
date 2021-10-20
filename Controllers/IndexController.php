@@ -3,18 +3,19 @@
 namespace Controllers;
 
 use Models;
+use View\DefaultView;
 
-class ViewController
+class IndexController
 {
-    private $vievMmodel;
+    private $defaultView;
 
     public function __construct()
     {
-        $this->vievMmodel = new Models\ViewModel();
+        $this->defaultView = new DefaultView();
     }
 
     public function indexAction()
     {
-        $this->vievMmodel->render();
+        $this->defaultView->render();
     }
 }
