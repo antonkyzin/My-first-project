@@ -2,7 +2,7 @@
 
 namespace Models;
 
-class TaskModel extends DatabaseModel
+class TaskModel extends DataModel
 {
     const STATUS_NEW = 3;
     const STATUS_DONE = 2;
@@ -12,10 +12,8 @@ class TaskModel extends DatabaseModel
     public function createTask($data)
     {
         if ($_FILES['image']["error"] == UPLOAD_ERR_OK) {
-            $data['image'] = rand() . $_FILES['image']['name'];
-            move_uploaded_file($_FILES['image']['tmp_name'], 'Media/images/tasks/' . $data['image']);
+            $data['image'] = $this->moveUploadFile('tasks');
         }
-        $data['time_end'] = date("Y-m-d H:i:s", time() + 3600 * $data['time_end']);
         $data['status'] = self::STATUS_NEW;
         return $this->insertData('tasks', $data);
     }
@@ -23,21 +21,23 @@ class TaskModel extends DatabaseModel
     public function getAllTasks($whereCondition = null)
     {
         $field = [
-            't.id', 'time_created', 'u1.name AS created_by', 'u2.name AS executor', 'task',
-            'status', 'time_start', 'time_end', 'comment', 'u3.name AS approved_by', 't.image'
+            't.id', 'time_created', 'u1.name AS created_by', 'u2.name AS executor', 'u3.family_member AS family_member', 'task',
+            'status', 'time_start', 'time_end', 'comment', 'u4.name AS approved_by', 't.image'
         ];
         $joinCondition = [
             'created_by' => 'u1.id',
             'executor' => 'u2.id',
-            'approved_by' => 'u3.id'
+            't.executor' => 'u3.id',
+            'approved_by' => 'u4.id'
+
         ];
-        $this->isTaskActive();
         return $this->selectJoinData('tasks', 'users', $field, $joinCondition, $whereCondition);
     }
 
     public function deleteTask(array $data)
     {
         $id = implode(',', $data);
+        $this->deleteFile('tasks', $id, 'tasks');
         return $this->deleteData('tasks', $id);
     }
 
@@ -70,11 +70,11 @@ class TaskModel extends DatabaseModel
         return $this->getAllTasks($whereCondition);
     }
 
-    public function isTaskActive()
+    public function updateTaskStatus()
     {
         $field = ['status' => self::STATUS_FAIL];
-        $condition = '`time_end` < NOW()';
-        return $this->updateData('tasks', $field, $condition);
+        $condition = '`time_end` < NOW() AND `status` =' . self::STATUS_NEW;
+        $this->updateData('tasks', $field, $condition);
     }
 
     public function getFailTasks()
@@ -85,7 +85,6 @@ class TaskModel extends DatabaseModel
 
     public function restartTask($data)
     {
-        $data['time_end'] = date("Y-m-d H:i:s", time() + 3600 * $data['time_end']);
         $field = [
             'time_end' => $data['time_end'],
             'status' => self::STATUS_NEW
@@ -96,8 +95,10 @@ class TaskModel extends DatabaseModel
 
     public function approveTask($data)
     {
-        $field = ['status' => self::STATUS_APPROVE];
-        $condition = '`id` = '. $data['id'];
+        $field = ['status' => self::STATUS_APPROVE,
+            'approved_by' => $_SESSION['id']
+        ];
+        $condition = '`id` = ' . $data['id'];
         return $this->updateData('tasks', $field, $condition);
     }
 }
