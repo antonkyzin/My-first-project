@@ -5,7 +5,7 @@ namespace Controllers;
 use Models\UserModel;
 use View\UserView;
 
-class UserController
+class UserController extends BaseController
 {
     private $userModel;
     private $userView;
@@ -16,23 +16,35 @@ class UserController
         $this->userView = new UserView();
     }
 
+    public function authorizationAction($errMsg = null)
+    {
+        if (!$this->userModel->isSigned()) {
+            $options = ['title' => 'Авторизация',
+                'content' => 'login.phtml'
+            ];
+            $this->userView->render($options, $errMsg);
+        } else {
+            $this->homeLocation();
+        }
+    }
+
     public function loginAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
+        if ($this->checkPost()) {
             $login = $_POST['login'];
             $password = $_POST['password'];
             $result = $this->userModel->login($login, $password);
             switch ($result) {
                 case 1 :
-                    $this->userView->location('/');
+                    $this->homeLocation();
                     break;
                 case 2 :
                     $errMsg = 'Мама пока не дала разрешение на вход!';
-                    $this->userView->render(null, $errMsg);
+                    $this->authorizationAction($errMsg);
                     break;
                 case 0 :
                     $errMsg = 'Неверный логин или пароль!';
-                    $this->userView->render(null, $errMsg);
+                    $this->authorizationAction($errMsg);
             }
         } else {
             $errMsg = 'Простите, но что-то пошло не так. Попробуйте еще раз';
@@ -45,26 +57,25 @@ class UserController
         if ($this->userModel->isSigned()) {
             session_destroy();
         }
-        $this->userView->location('/');
+        $this->homeLocation();
     }
 
     public function registrationAction($errMsg = null)
     {
-        $isSigned = $this->userModel->isSigned();
-        if (!$isSigned) {
+        if (!$this->userModel->isSigned()) {
             $options = [
                 'title' => 'Регистрация',
                 'content' => 'registration.phtml'
             ];
             $this->userView->render($options, $errMsg);
         } else {
-            $this->userView->location('/');
+            $this->homeLocation();
         }
     }
 
     public function newAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
+        if ($this->checkPost()) {
             $result = $this->userModel->newUser($_POST);
         }
         if ($result === 'exist') {
@@ -82,7 +93,6 @@ class UserController
         $isSigned = $this->userModel->isSigned();
         if ($isSigned) {
             $allUsers = $this->userModel->getAllUsers();
-            $i = 0;
             $options = [
                 'title' => 'Список пользователей',
                 'content' => 'all_users.phtml',
@@ -90,36 +100,36 @@ class UserController
             ];
             $this->userView->render($options);
         } else {
-            $this->userView->location('/');
+            $this->homeLocation();
         }
     }
 
     public function deleteAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
+        if ($this->checkPost()) {
             $result = $this->userModel->deleteUser($_POST);
             if ($result) {
-                $this->userView->location('/user/allUsers');
+                $this->location('/user/allUsers');
             }
         }
     }
 
     public function updateUserAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
+        if ($this->checkPost()) {
             $result = $this->userModel->updateUser($_POST);
             if ($result) {
-                $this->userView->location('/user/allUsers');
+                $this->location('/user/allUsers');
             }
         }
     }
 
     public function approveUserAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
+        if ($this->checkPost()) {
             $result = $this->userModel->approveUser($_POST);
             if ($result) {
-                $this->userView->location('/user/allUsers');
+                $this->location('/user/allUsers');
             }
         }
     }
@@ -134,7 +144,7 @@ class UserController
             ];
             $this->userView->render($options, $errMsg);
         } else {
-            $this->userView->location('/');
+            $this->homeLocation();
         }
     }
 
@@ -150,7 +160,7 @@ class UserController
             }
             $this->avatarFormAction($errMsg);
         } else {
-            $this->userView->location('/');
+            $this->homeLocation();
         }
     }
 
@@ -166,7 +176,7 @@ class UserController
             }
             $this->avatarFormAction($errMsg);
         } else {
-            $this->userView->location('/');
+            $this->homeLocation();
         }
     }
 }

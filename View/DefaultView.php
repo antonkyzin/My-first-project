@@ -26,11 +26,6 @@ class DefaultView
         return $options;
     }
 
-    public function location($url)
-    {
-        header("Location: $url");
-    }
-
     public function renderCheckbox($login, $familyMember)
     {
         $result = false;

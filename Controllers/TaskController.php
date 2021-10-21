@@ -5,7 +5,7 @@ namespace Controllers;
 use Models\TaskModel;
 use View\TaskView;
 
-class TaskController
+class TaskController extends BaseController
 {
     private $taskModel;
     private $taskView;
@@ -28,13 +28,13 @@ class TaskController
             ];
             $this->taskView->render($options, $message);
         } else {
-            $this->taskView->location('/');
+            $this->homeLocation();
         }
     }
 
     public function createTaskAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
+        if ($this->checkPost()) {
             $result = $this->taskModel->createTask($_POST);
             if ($result) {
                 $message = ('Задание успешно создано!');
@@ -62,28 +62,28 @@ class TaskController
                 $this->taskView->render($options, $errMsg);
             }
         } else {
-            $this->taskView->location('/');
+            $this->homeLocation();
         }
     }
 
     public function deleteTaskAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
+        if ($this->checkPost()) {
             $result = $this->taskModel->deleteTask($_POST[]);
             if ($result) {
-                $this->taskView->location('/task/allTasks');
+                $this->location('/task/allTasks');
             }
         } else {
-            $this->taskView->location('/task/allTasks');
+            $this->location('/task/allTasks');
         }
     }
 
     public function updateTaskAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
+        if ($this->checkPost()) {
             $result = $this->taskModel->updateTask($_POST);
             if ($result) {
-                $this->taskView->location('/task/allTasks');
+                $this->location('/task/allTasks');
             }
         }
     }
@@ -105,16 +105,16 @@ class TaskController
                 $this->taskView->render($options, $errMsg);
             }
         } else {
-            $this->taskView->location('/');
+            $this->homeLocation();
         }
     }
 
     public function userExecTaskAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
+        if ($this->checkPost()) {
             $result = $this->taskModel->execTask($_POST);
             if ($result) {
-                $this->taskView->location('/task/myTasks');
+                $this->location('/task/myTasks');
             }
         }
     }
@@ -135,7 +135,7 @@ class TaskController
                 $this->taskView->render($options, $errMsg);
             }
         } else {
-            $this->taskView->location('/');
+            $this->homeLocation();
         }
     }
 
@@ -156,26 +156,26 @@ class TaskController
                 $this->taskView->render($options, $errMsg);
             }
         } else {
-            $this->taskView->location('/');
+            $this->homeLocation();
         }
     }
 
     public function restartTaskAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
+        if ($this->checkPost()) {
             $result = $this->taskModel->restartTask($_POST);
             if ($result) {
-                $this->taskView->location('/task/getFailTasks');
+                $this->location('/task/getFailTasks');
             }
         }
     }
 
     public function approveTaskAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
+        if ($this->checkPost()) {
             $result = $this->taskModel->approveTask($_POST);
             if ($result) {
-                $this->taskView->location('/task/getDoneTasks');
+                $this->location('/task/getDoneTasks');
             }
         }
     }
@@ -183,6 +183,6 @@ class TaskController
     public function updateTaskStatusAction()
     {
         $this->taskModel->updateTaskStatus();
-        $this->taskView->location('/task/allTasks');
+        $this->location('/task/allTasks');
     }
 }

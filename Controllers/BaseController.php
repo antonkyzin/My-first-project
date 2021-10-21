@@ -1,23 +1,12 @@
 <?php
 
 namespace Controllers;
-use Models\DataModel;
-use View\DefaultView;
 
 class BaseController
 {
-    public function __construct()
-    {
-        $this->dataModel  = new DataModel();
-        $this->defaultView = new DefaultView();
-    }
-
     protected function checkPost()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST)) {
-            return true;
-        }
-        return false;
+        return $_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST);
     }
 
     public function location($url)
