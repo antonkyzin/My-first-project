@@ -1,18 +1,12 @@
 <?php /** @var $options array */ ?>
 <?php if (!isset($options['login'])): ?>
-    <h1>Добро пожаловать! Авторизируйтесь на сайте или пройдите регистрацию</h1>
-    <?php echo $options['errMsg'] ?? '' ?>
-    <form action="/user/login" method="post">
-        <label>Логин:</label>
-        <input name="login" type="text" size="30" required placeholder="Ваш логин"/>
-        <br>
-        <label>Пароль:</label>
-        <input name="password" type="password" size="30" required placeholder="Ваш пароль"/>
-        <br>
-        <button type="submit">Войти</button>
-    </form>
-
-    <form action="/user/registration" method="post">
-        <button type="submit">Регистрация</button>
-    </form>
+    <h3>Добро пожаловать! Мы - семья Кузиных, и это наш сайт.</h3>
+    <h4>О нашей семье</h4>
+    <p>
+        <img src="/Media/images/logos/logo.jpg" alt="Наша семья" width="200" height="200" class="leftimg">
+        У нас очень дружная и счастливая семья. Мы все помогаем друг другу и пытаемся никогда не ругаться.
+        Папа любит читать книги и рассказывать всем интересные истории, а мама готовит самые вкусные блюда в мире.
+        Мы никогда не ссоримся, всегда помогаем друг другу и поддерживаем.
+        Этот сайт создан для улучшения коммуникации членов семьи.
+    </p>
 <?php endif; ?>
