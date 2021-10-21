@@ -1,0 +1,9 @@
+<?php echo isset($errMsg) ? $errMsg : ''?>
+<form action="/user/changeAvatar" method="post" enctype="multipart/form-data">
+    <input type="file" name="image">
+    <button type="submit">Отправить</button>
+</form>
+<br>
+<form action="/user/deleteAvatar" method="post">
+    <button type="submit">Удалить аватар</button>
+</form>

@@ -1,0 +1,65 @@
+<?php /**
+ * @var $this \View\UserView
+ * @var $options array
+ */ ?>
+<form action="/user/delete" method="post">
+    <table border="1">
+        <tr>
+            <td>id</td>
+            <td>Имя</td>
+            <td>Член семьи</td>
+            <td>Возраст</td>
+            <td>Адрес</td>
+            <td>Статус</td>
+            <td>Изображение</td>
+            <td>
+                <button type="submit">Удалить</button>
+            </td>
+        </tr>
+        <?php foreach ($options['allUsers'] as $user): ?>
+            <tr>
+                <?php foreach ($user as $key => $value): ?>
+                    <td><?= $this->renderUserElement($key, $value) ?></td>
+                <?php endforeach; ?>
+                <?php if ($this->renderCheckbox($options['login'], $user['family_member'])): ?>
+                    <td><input type="checkbox" name="<?= $user['id'] ?>" value="<?= $user['id'] ?>"></td>
+                <?php endif; ?>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+</form>
+
+<p>
+<form action="/user/updateUser" method="post">
+    <label>Изменить статус пользователя:</label>
+    <p>
+        <select multiple name="id">
+            <option disabled>Выберите пользователя</option>
+            <?php if ($options['login'] == 'mother'): ?>
+                <?php foreach ($options['allUsers'] as $user): ?>
+                    <option value="<?= $user['id'] ?>"><?= $user['name'] ?> </option>;
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </select>
+    </p>
+    <input name="status" type="text" size="30"/>
+    <input type="submit" value="Отправить">
+</form>
+</p>
+
+<p>
+<form action="/user/approveUser" method="post">
+    <label>Подтвердить пользователя:</label>
+    <p>
+        <select multiple name="id">
+            <option disabled>Выберите пользователя</option>
+            <?php foreach ($options['allUsers'] as $user): ?>
+                <?php if ($this->renderCheckbox($options['login'], $user['family_member']) && $user['approve_status'] == 0): ?>
+                    <option value="<?= $user['id'] ?>"><?= $user['name'] ?> </option>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </select>
+    </p>
+    <input type="submit" value="Отправить">
+</form>
+</p>

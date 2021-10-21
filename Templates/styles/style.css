@@ -1,0 +1,46 @@
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    padding: 10px;
+    width: 100%;
+    text-align: center;
+}
+
+.header {
+    padding: 10px;
+    width: 100%;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/*h1, h2, h3, h4, h5 {*/
+/*    margin: 0;*/
+/*}*/
+.nav {
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.nav_link {
+    display: inline-block;
+    vertical-align: top;
+    margin: 0 10px;
+    color: black;
+    text-decoration: none;
+}
+
+.header_inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.leftimg {
+    float:left;
+    margin: 7px 7px 7px 0;
+}

@@ -1,0 +1,155 @@
+<?php
+
+namespace Models;
+
+class DataModel
+{
+    protected $pdo;
+
+    public function __construct()
+    {
+        $params = require 'data/db_params.php';
+        $options = array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_WARNING,
+            \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC);
+        $dsn = "mysql:host={$params['host']};dbname={$params['dbname']}; charset={$params['charset']}";
+        try {
+            $this->pdo = new \PDO($dsn, $params['user'], $params['password'], $options);
+            return $this->pdo;
+        } catch (\PDOException $e) {
+            return $e->getCode();
+        }
+    }
+
+    public function insertData($tableName, array $data)
+    {
+        $insert = "INSERT INTO `{$tableName}` (";
+        $values = 'VALUES (';
+        $i = 1;
+        $count = count($data);
+        foreach ($data as $field => $value) {
+            if ($i == $count) {
+                $insert .= "`{$field}`)";
+                $values .= ":{$field})";
+                break;
+            }
+            $insert .= "`{$field}`, ";
+            $values .= ":{$field}, ";
+            $i++;
+        }
+        $sql = $insert . $values;
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            foreach ($data as $field => $value) {
+                $stmt->bindValue(":{$field}", $value);
+            }
+            return $stmt->execute();
+        } catch (\PDOException $e) {
+            return $e->getCode();
+        }
+    }
+
+    public function deleteData($tableName, $id)
+    {
+        $sql = "DELETE FROM `{$tableName}` WHERE `id` IN ($id)";
+        return $this->pdo->exec($sql);
+    }
+
+    public function selectData($tableName, $field, $condition = null)
+    {
+        $sql = 'SELECT ';
+        $i = 1;
+        $count = count($field);
+        foreach ($field as $value) {
+            if ($i == $count) {
+                $sql .= "`{$value}` ";
+            } else {
+                $sql .= "`{$value}`, ";
+            }
+            $i++;
+        }
+        $sql .= "FROM `{$tableName}`";
+        if ($condition) {
+            $sql .= " WHERE {$condition}";
+        }
+        try {
+            $result = $this->pdo->query($sql);
+            return $result->fetchAll();
+        } catch (\PDOException $e) {
+            return $e->getCode();
+        }
+    }
+
+    public function selectJoinData($fromTable, $joinTable, $field, array $joinCondition, $whereCondition = null)
+    {
+        $aliasFromTable = $fromTable[0];
+        $aliasJoinTable = $joinTable[0];
+        $sql = 'SELECT ';
+        $i = 1;
+        $count = count($field);
+        foreach ($field as $value) {
+            if ($i == $count) {
+                $sql .= "{$value} ";
+            } else {
+                $sql .= "{$value}, ";
+            }
+            $i++;
+        }
+        $sql .= "FROM {$fromTable} {$aliasFromTable}";
+        $i = 1;
+        foreach ($joinCondition as $key => $value) {
+            $sql .= " LEFT JOIN  $joinTable $aliasJoinTable" . $i . " ON $key  = $value ";
+            $i++;
+        }
+        if ($whereCondition) {
+            $sql .= " WHERE {$whereCondition}";
+        }
+        $sql = trim($sql);
+        try {
+            $result = $this->pdo->query($sql);
+            return $result->fetchAll();
+        } catch (\PDOException $e) {
+            return $e->getCode();
+        }
+    }
+
+    public function updateData($tableName, $field, $condition)
+    {
+        $sql = "UPDATE `{$tableName}` SET ";
+        $i = 1;
+        $count = count($field);
+        foreach ($field as $key => $value) {
+            if ($i == $count) {
+                $sql .= "`{$key}`={$this->pdo->quote($value)} ";
+            } else {
+                $sql .= "`{$key}`={$this->pdo->quote($value)}, ";
+            }
+            $i++;
+        }
+        $sql .= "WHERE {$condition}";
+        return $this->pdo->exec($sql);
+    }
+
+    public function isSigned()
+    {
+        return isset($_SESSION['login']);
+    }
+
+    public function moveUploadFile($folder, $fileName = null)
+    {
+        $fileName = $fileName ?? rand() . $_FILES['image']['name'];
+        move_uploaded_file($_FILES['image']['tmp_name'], "Media/images/$folder/" . $fileName);
+        return $fileName;
+    }
+
+    public function deleteFile($table, $id, $folder)
+    {
+        $field = ['image'];
+        $condition = "`id` IN ($id)";
+        $avatars = $this->selectData($table, $field, $condition);
+        foreach ($avatars as $avatar) {
+            if (isset($avatar['image']) && $avatar['image'] != 'standart_avatar.jpg') {
+                unlink("Media/images/$folder/" . $avatar['image']);
+            }
+        }
+    }
+}

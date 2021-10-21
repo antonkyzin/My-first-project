@@ -1,0 +1,32 @@
+<?php /**
+ * @var $options array
+ * @var $this \View\UserView
+ */ ?>
+<?php echo isset($errMsg) ? $errMsg : '' ?>
+<form action="/task/createTask" method="post" enctype="multipart/form-data">
+    <label></label>
+    <input type="text" name="created_by" value="<?= $_SESSION['login'] == 'mother' ? 1 : 2 ?>" hidden>
+    <br>
+    <label>Исполнитель:</label>
+    <select multiple name="executor" required>
+        <?php foreach ($options['usersName'] as $user):
+            if ($user['family_member'] != 'мама' && $this->renderCheckbox($options['login'], $user['family_member'])): ?>
+                <option value="<?= $user['id'] ?>"><?= $user['name'] ?></option>
+            <?php endif; ?>
+        <?php endforeach; ?>
+    </select>
+    <br>
+    <label>Задание:</label>
+    <input name="task" type="text" size="30" required/>
+    <br>
+    <label>Когда закончится:</label>
+    <input name="time_end" type="datetime-local" required/>
+    <br>
+    <label>Фото к задаче:</label>
+    <input name="image" type="file"/>
+    <br>
+    <button type="submit">Создать</button>
+</form>
+<form action="/" method="post">
+    <button type="submit">Назад</button>
+</form>

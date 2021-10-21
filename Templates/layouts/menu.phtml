@@ -1,0 +1,12 @@
+<ul>
+    <?php if ($options['login'] == 'mother' || $options['login'] == 'father'): ?>
+        <li><a href="/task/newTask">Создать новую задачу</a></li>
+        <li><a href="/user/allUsers">Список пользователей</a></li>
+    <?php endif; ?>
+    <li><a href="/task/myTasks">Мои задачи</a></li>
+    <li><a href="/task/allTasks">Все задачи</a></li>
+    <li><a href="/task/getDoneTasks">Выполненные задачи</a></li>
+    <li><a href="/task/getFailTasks">Проваленные задачи</a></li>
+    <li><a href="/user/avatarForm">Изменить/Удалить аватар</a></li>
+    <li><a href="/user/logout">Логаут</a></li>
+</ul>

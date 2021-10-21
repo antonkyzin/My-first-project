@@ -1,0 +1,43 @@
+<?php /** @var $options array
+ * @var $this \View\TaskView
+ */ ?>
+<?php echo isset($errMsg) ? $errMsg : '' ?>
+<table border="1">
+    <tr>
+        <td>id</td>
+        <td>Время создания</td>
+        <td>Создал</td>
+        <td>Исполнитель</td>
+        <td>Задание</td>
+        <td>статус</td>
+        <td>Время начала</td>
+        <td>Время окончания</td>
+        <td>Комментарий</td>
+        <td>Подтверждено кем</td>
+        <td>Изображение</td>
+    </tr>
+    <?php foreach ($options['doneTasks'] as $task): ?>
+        <tr>
+            <?php foreach ($task as $key => $value): ?>
+                <?php if ($key == 'family_member'): continue; ?>
+                <?php endif; ?>
+                <td><?= $this->renderTaskElement($key, $value) ?></td>
+            <?php endforeach; ?>
+        </tr>
+    <?php endforeach; ?>
+</table>
+
+<form action="/task/approveTask" method="post">
+    <label>Подтвердить выполнение задания:</label>
+    <p>
+        <select multiple name="id">
+            <option disabled>Выберите id задания</option>
+            <?php foreach ($options['doneTasks'] as $task): ?>
+                <?php if ($this->renderCheckbox($options['login'], $task['family_member'])): ?>
+                    <option value="<?= $task['id'] ?>"><?= $task['id'] ?></option>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </select>
+    </p>
+    <input type="submit" value="Отправить">
+</form>
