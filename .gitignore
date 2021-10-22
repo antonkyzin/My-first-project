@@ -1,2 +1,5 @@
 /.idea/
 /.htaccess
+/Media/images/users/
+/Media/images/tasks/
+!/Media/images/users/standart_avatar.jpg

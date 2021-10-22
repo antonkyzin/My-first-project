@@ -3,6 +3,6 @@ return [
     'host' => 'localhost',
     'dbname' => 'family',
     'user' => 'snuff',
-    'password' => 'kyzmi4',
+    'password' => 'snuff',
     'charset' => 'UTF8'
 ];
