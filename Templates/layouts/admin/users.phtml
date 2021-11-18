@@ -1,0 +1,31 @@
+<?php /**
+ * @var $options array
+ * @var $this \View\UserView
+ */ ?>
+
+<nav>
+    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+    <a href="/admin/user/form/delete">Удалить</a>
+    <a href="/admin/user/form/approve">Подтвердить</a>
+    <?php if ($options['user']['access'] == 'head'): ?>
+        <a href="/admin/user/form/change">Изменить группу</a>
+    <?php endif; ?>
+</nav>
+<table border="1">
+    <tr>
+        <td>id</td>
+        <td>Имя</td>
+        <td>Группа</td>
+        <td>Возраст</td>
+        <td>Адрес</td>
+        <td>Статус</td>
+        <td>Изображение</td>
+    </tr>
+    <?php foreach ($options['data'] as $task): ?>
+        <tr>
+            <?php foreach ($task as $key => $value): ?>
+                <td><?= $this->renderElement($key, $value) ?></td>
+            <?php endforeach; ?>
+        </tr>
+    <?php endforeach; ?>
+</table>

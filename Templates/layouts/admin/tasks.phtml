@@ -1,0 +1,36 @@
+<?php /**
+ * @var $options array
+ * @var $this \View\TaskView
+ */ ?>
+
+<nav>
+    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+    <a href="/admin/task/form/new">Создать</a>
+    <a href="/admin/task/form/delete">Удалить</a>
+    <a href="/admin/task/form/change">Изменить</a>
+    <a href="/admin/task/form/approve">Подтвердить</a>
+    <a href="/admin/task/form/restart">Возобновить</a>
+    <a href="/task/updateStatus">Обновить</a>
+</nav>
+<table border="1">
+    <tr>
+        <td>id</td>
+        <td>Время создания</td>
+        <td>Создал</td>
+        <td>Исполнитель</td>
+        <td>Задание</td>
+        <td>статус</td>
+        <td>Время начала</td>
+        <td>Время окончания</td>
+        <td>Комментарий</td>
+        <td>Подтверждено кем</td>
+        <td>Изображение</td>
+    </tr>
+    <?php foreach ($options['data'] as $task): ?>
+        <tr>
+            <?php foreach ($task as $key => $value): ?>
+                <td><?= $this->renderElement($key, $value) ?></td>
+            <?php endforeach; ?>
+        </tr>
+    <?php endforeach; ?>
+</table>

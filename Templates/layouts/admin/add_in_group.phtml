@@ -1,0 +1,20 @@
+<?php /** @var $options array */ ?>
+
+<nav>
+    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+</nav>
+
+<?php if ($options['data']['groups']): ?>
+    <form action="/admin/course/addStudentInGroup" method="post">
+        <input type="text" name="student_id" value="<?= ($options['data']['student']) ?>" hidden>
+        <select name="group_id">
+            <?php foreach ($options['data']['groups'] as $group): ?>
+                <option value="<?= $group['id'] ?>"><?= $group['group_name'] ?></option>
+            <?php endforeach; ?>
+        </select>
+        <input type="text" name="course_id" value="<?= ($options['data']['course']) ?>" hidden>
+        <button type="submit">Добавить</button>
+    </form>
+<?php else: ?>
+    <a href="/admin/course/createGroupForm/">Создать группу</a>
+<?php endif; ?>

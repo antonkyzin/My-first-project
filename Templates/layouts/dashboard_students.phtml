@@ -1,0 +1,21 @@
+<?php /** @var $options array */ ?>
+
+    <nav>
+        <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+    </nav>
+<?php if ($options['data']): ?>
+    <table border="1">
+        <tr>
+            <td>id</td>
+            <td>Имя</td>
+        </tr>
+        <?php foreach ($options['data'] as $student): ?>
+            <tr>
+                <td><?= $student['id'] ?></td>
+                <td><?= $student['name'] ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+<?php else: ?>
+    <h3>На этом курсе нету студентов</h3>
+<?php endif; ?>

@@ -1,0 +1,45 @@
+<?php /** @var $options array */ ?>
+
+
+<form action="/course/sort" method="post">
+    <label>Сортировать по:</label>
+    <select name="sort_by">
+        <option value="popularity/DESC">Популярность по убыванию</option>
+        <option value="popularity/ASC">Популярность по возростанию</option>
+        <option value="price/DESC">Цена по убыванию</option>
+        <option value="price/ASC">Цена по возростанию</option>
+        <option value="facultative/DESC">Факультативы по убыванию</option>
+        <option value="facultative/ASC">Факультативы по возростанию</option>
+    </select>
+    <label>Показать неактивные курсы</label>
+    <input type="checkbox" name="show_all">
+    <button type="submit">Сортировать</button>
+</form>
+
+<form action="/course/search" method="post">
+    <label>Введите название или часть описания курса: </label>
+    <input type="text" name="search">
+    <button type="submit">Найти</button>
+</form>
+<?php echo $options['errMsg'] ?? null ?>
+<?php if (isset($options['data'])): ?>
+    <table border="1">
+        <tr>
+            <td>Название</td>
+            <td>Описание</td>
+            <td>Цена</td>
+            <td>Студенты</td>
+            <td>Факультативы</td>
+        </tr>
+        <?php foreach ($options['data'] as $course): ?>
+            <tr>
+                <td><?= $course['course_name'] ?></td>
+                <td><?= $course['description'] ?></td>
+                <td><?= $course['price'] ?></td>
+                <td><?= $course['students'] ?></td>
+                <td><?= $course['facultative'] ?></td>
+                <td><a href="/course/courseInfo/<?= $course['id'] ?>">Подробней</a></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+<?php endif; ?>

@@ -1,39 +1,51 @@
 <?php
+declare(strict_types=1);
 
 namespace View;
 
+/**
+ * Default class for extends
+ * @package View
+ */
 class DefaultView
 {
-    public function render($options = null, $errMsg = null)
+    /**
+     * Maim method for rendering data
+     * @param null|array $options
+     * @return void
+     */
+    public function render(array $options = null): void
     {
-        $options = $this->getOptions($options, $errMsg);
+        $options = $this->getOptions($options);
         include_once 'Templates/index.phtml';
     }
 
-    public function getOptions($options, $errMsg)
+    /**
+     * Set default options for rendering if it's needed
+     * @param array $options
+     * @return array
+     */
+    public function getOptions(array $options): array
     {
+        $options['content'] = 'layouts/' . $options['content'];
         $options['title'] = isset($options['title']) ? $options['title'] : 'Главная';
-        $options['content'] = isset($options['content']) ? 'layouts/' . $options['content'] : 'layouts/main.phtml';
         $options['header'] = isset($options['header']) ? 'layouts/' . $options['header'] : 'layouts/header.phtml';
         $options['footer'] = isset($options['footer']) ? 'layouts/' . $options['footer'] : 'layouts/footer.phtml';
-        $options['login'] = isset($_SESSION['login']) ? $_SESSION['login'] : null;
-        if (isset($errMsg)) {
-            $options['errMsg'] = $errMsg;
-        }
-        if (isset($_SESSION['login'])) {
-            $options['menu'] = 'layouts/menu.phtml';
-        }
+        $options['user'] = isset($_SESSION['user']) ? $_SESSION['user'] : null;
         return $options;
     }
 
-    public function renderCheckbox($login, $familyMember)
+    /**
+     * Default method for render picture element
+     * @param string $type
+     * @param string|null $value
+     * @return string|null
+     */
+    public function renderElement(string $type, string $value = null)
     {
-        $result = false;
-        if ($login == 'mother') {
-            $result = true;
-        } elseif ($login == 'father' && (mb_strtolower($familyMember) == 'сын' || mb_strtolower($familyMember) == 'дочь')) {
-            $result = true;
+        if ($type == 'image') {
+            $value = isset($value) ? "<img src='/Media/images/" . $value . "' width='50' height='50' alt='$value'>" : $value;
         }
-        return $result;
+        return $value;
     }
 }

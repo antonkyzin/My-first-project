@@ -1,0 +1,33 @@
+<?php /**
+ * @var $options array
+ * @var $this View\CourseView
+ */ ?>
+
+<nav>
+    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+</nav>
+
+<table border="1">
+    <tr>
+        <td>Название</td>
+        <td>Описание</td>
+        <td>Цена</td>
+        <td>Студенты</td>
+        <td>Факультативы</td>
+        <td>Названия факультативов</td>
+    </tr>
+    <tr>
+        <td><?= $options['data']['course']['course_name'] ?></td>
+        <td><?= $options['data']['course']['description'] ?></td>
+        <td><?= $options['data']['course']['price'] ?></td>
+        <td><?= $options['data']['course']['students'] ?></td>
+        <td><?= $options['data']['course']['facultative'] ?></td>
+        <td>
+            <?php foreach ($options['data']['course']['facultative_list'] as $facultative): ?>
+                <a href="/course/facultativeInfo/<?= $facultative['id'] ?>"><?= $facultative['title'] ?></a>
+                <br>
+            <?php endforeach; ?>
+        </td>
+        <td><?= $this->renderLink($options['data']['course'], ($options['data']['user'] ?? null)) ?></td>
+    </tr>
+</table>

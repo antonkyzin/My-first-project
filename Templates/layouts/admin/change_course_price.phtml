@@ -1,0 +1,31 @@
+<?php /** @var $options array */ ?>
+
+<nav>
+    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+</nav>
+
+<form action="/admin/course/changePrice" method="post">
+    <table border="1">
+        <tr>
+            <td>id</td>
+            <td>Название</td>
+            <td>Описание</td>
+            <td>Цена</td>
+            <td>статус</td>
+            <td>
+                <button type="submit">Изменить</button>
+            </td>
+        </tr>
+        <?php foreach ($options['data'] as $course): ?>
+            <tr>
+                <?php foreach ($course as $key => $value): ?>
+                    <td><?= $value ?></td>
+                <?php endforeach; ?>
+                <td><input type="checkbox" name="<?= $course['id'] ?>" value="<?= $course['id'] ?>"></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+    <br>
+    <label>Цена:</label>
+    <input type="number" name="price">
+</form>

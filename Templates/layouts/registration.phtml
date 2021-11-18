@@ -1,26 +1,59 @@
-<h1>Добро пожаловать! Пройдите регистрацию</h1>
-<?php echo isset($errMsg) ? $errMsg : '' ?>
-<form action="/user/new" method="post" enctype="multipart/form-data">
-    <label>Логин:</label>
-    <input name="login" type="text" required size="30"/>
-    <br>
-    <label>Пароль:</label>
-    <input name="password" type="password" required size="30"/>
-    <br>
-    <label>Полное имя:</label>
-    <input name="name" type="text" required size="30"/>
-    <br>
-    <label>Член сумьи:</label>
-    <input name="family_member" required type="text" size="30"/>
-    <br>
-    <label>Возраст:</label>
-    <input name="age" type="text" required size="30"/>
-    <br>
-    <label>Адрес:</label>
-    <input name="address" type="text" required size="30"/>
-    <br>
-    <label>Фото:</label>
-    <input name="image" type="file"/>
-    <br>
-    <button type="submit">Зарегистрировать</button>
-</form>
+<?php /** @var $options array */ ?>
+<h2>Добро пожаловать! Пройдите регистрацию</h2>
+<?php echo isset($options['errMsg']) ? $options['errMsg'] : '' ?>
+<?php if (!isset($options['param'])): ?>
+    <p>
+        <a href="/user/registration/family">Я - член семьи</a>
+        <a href="/user/registration/student">Я - студент</a>
+    </p>
+<?php elseif ($options['param'] == 'family'): ?>
+    <form action="/user/new/users" method="post" enctype="multipart/form-data">
+        <label>Логин:</label>
+        <input name="login" type="text" required size="30"/>
+        <br>
+        <label>Пароль:</label>
+        <input name="password" type="password" required size="30"/>
+        <br>
+        <label>Полное имя:</label>
+        <input name="name" type="text" required size="30"/>
+        <br>
+        <label>Член сумьи:</label>
+        <select name="family_member">
+            <option value="children">Дети</option>
+            <option value="relatives">Родственники</option>
+        </select>
+        <br>
+        <label>Возраст:</label>
+        <input name="age" type="number" required size="30"/>
+        <br>
+        <label>Адрес:</label>
+        <input name="address" type="text" required size="30"/>
+        <br>
+        <label>Фото:</label>
+        <input name="image" type="file"/>
+        <br>
+        <button type="submit">Зарегистрировать</button>
+    </form>
+<?php elseif ($options['param'] == 'student'): ?>
+    <form action="/user/new/students" method="post" enctype="multipart/form-data">
+        <label>Логин:</label>
+        <input name="login" type="text" required size="30"/>
+        <br>
+        <label>Полное имя:</label>
+        <input name="name" type="text" required size="30"/>
+        <br>
+        <label>e-mail:</label>
+        <input name="e_mail" type="text" required size="30"/>
+        <br>
+        <label>Дата рождения:</label>
+        <input name="birthdate" type="number" required size="30"/>
+        <br>
+        <label>Пароль:</label>
+        <input name="password" type="password" required size="30"/>
+        <br>
+        <label>Фото:</label>
+        <input name="image" type="file"/>
+        <br>
+        <button type="submit">Зарегистрировать</button>
+    </form>
+<?php endif; ?>

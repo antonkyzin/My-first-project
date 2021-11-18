@@ -1,0 +1,42 @@
+<?php /** @var $options array */ ?>
+
+<form action="/admin/course/createFacultative" method="post">
+    <label>Назавние:</label>
+    <input type="text" name="title">
+    <label>Оптсание:</label>
+    <input type="text" name="description">
+    <label>Цена:</label>
+    <input type="number" name="price">
+    <label>Курс:</label>
+    <select name="course">
+        <?php foreach ($options['data']['courses'] as $course): ?>
+            <option value="<?= $course['id'] ?>"><?= $course['course_name'] ?></option>
+        <?php endforeach; ?>
+    </select>
+    <button type="submit">Создать</button>
+</form>
+<br>
+<form action="/admin/course/deactivateFacultative" method="post">
+    <table border="1">
+        <tr>
+            <td>id</td>
+            <td>Название</td>
+            <td>Описание</td>
+            <td>Цена</td>
+            <td>Курс</td>
+            <td>Статус</td>
+            <td>
+                <button type="submit">Деактивировать</button>
+            </td>
+        </tr>
+
+        <?php foreach ($options['data']['facultative'] as $facultative): ?>
+            <tr>
+                <?php foreach ($facultative as $value): ?>
+                    <td><?= $value ?></td>
+                <?php endforeach; ?>
+                <td><input type="checkbox" name="<?= $facultative['id'] ?>" value="<?= $facultative['id'] ?>"></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+</form>

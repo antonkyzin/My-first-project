@@ -1,0 +1,15 @@
+<?php /** @var $options array */ ?>
+
+<img src="/Media/images/<?= $options['user']['image'] ?>" alt="avatar" width="150px" height="150px">
+<h3>Добро пожаловать <?= $options['user']['name'] ?>!</h3>
+<ul>
+    <li><a href="/task/allTasks">Задачи</a></li>
+    <li><a href="/admin/user/allUsers">Члены семьи</a></li>
+    <li><a href="/admin/student/allStudents">Студенты</a></li>
+    <li><a href="/admin/course/groupsList">Группы</a></li>
+    <li><a href="/admin/course/editCourses">Курсы</a></li>
+    <li><a href="/admin/course/facultative">Факультативы</a></li>
+    <li><a href="/admin/course/courseClaim">Заявки на курс</a></li>
+    <li><a href="/admin/course/facultativeClaim">Заявки на факультатив</a></li>
+    <li><a href="/user/logout">Logout</a></li>
+</ul>

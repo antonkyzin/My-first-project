@@ -1,0 +1,28 @@
+<?php /** @var $options array */ ?>
+
+<nav>
+    <a href="/course/dashboard">Назад</a>
+</nav>
+<?php if ($options['data']): ?>
+    <table border="1">
+        <tr>
+            <td>id</td>
+            <td>Название</td>
+            <td>Цена</td>
+            <td>Студентов</td>
+            <td>Уроков</td>
+            <td>Сумма</td>
+            <td>Статус</td>
+        </tr>
+        <?php foreach ($options['data'] as $facultative): ?>
+            <tr>
+                <?php foreach ($facultative as $item): ?>
+                    <td><?= $item ?></td>
+                <?php endforeach; ?>
+                <td><a href="/course/studentsOnFacultative/<?=$facultative['id']?>">Студенты</a></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+<?php else : ?>
+    <h3>Факультотивов нету. <a href="/admin/course/facultative">Добавьте факультатив</a></h3>
+<?php endif; ?>

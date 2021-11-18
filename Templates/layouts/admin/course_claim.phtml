@@ -1,0 +1,26 @@
+<?php /** @var $options array */ ?>
+
+<nav>
+    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+</nav>
+
+<form action="/admin/course/deleteFromCourseClaim" method="post">
+    <table border="1">
+        <tr>
+            <td>Имя</td>
+            <td>Курс</td>
+            <td>
+                <button type="submit">Отменить</button>
+            </td>
+        </tr>
+        <?php foreach ($options['data'] as $value): ?>
+            <tr>
+                <td><?= $value['name'] ?></td>
+                <td><?= $value['course_name'] ?></td>
+                <td><input type="checkbox" name="<?= $value['course_id'] ?>" value="<?= $value['student_id'] ?>"></td>
+                <td><a href="/admin/course/addInGroupForm/<?= $value['student_id'] ?>/<?= $value['course_id'] ?>">Подтвердить</a>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+</form>

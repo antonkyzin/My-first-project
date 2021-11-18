@@ -1,0 +1,23 @@
+<?php /** @var $options array */ ?>
+
+<nav>
+    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+</nav>
+<table border="1">
+    <tr>
+        <td>Название</td>
+        <td>Описание</td>
+        <td>Цена</td>
+    </tr>
+    <tr>
+        <td><?= $options['data']['facultative']['title'] ?></td>
+        <td><?= $options['data']['facultative']['description'] ?></td>
+        <td><?= $options['data']['facultative']['price'] ?></td>
+    </tr>
+</table>
+<form action="/course/registerToFacultative" method="post">
+    <label>Введите количество занятий:</label>
+    <input type="hidden" name="facultative_id" value="<?= $options['data']['facultative']['id'] ?>">
+    <input type="number" name="lessons_number">
+    <button type="submit">Подать заявку</button>
+</form>

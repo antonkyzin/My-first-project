@@ -1,0 +1,28 @@
+<?php /**
+ * @var $options array
+ * @var $this \View\TaskView
+ */ ?>
+<nav>
+    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+</nav>
+
+<form action="/admin/user/approve" method="post">
+    <table border="1">
+        <tr>
+            <td>id</td>
+            <td>Имя</td>
+            <td>Группа</td>
+            <td>
+                <button type="submit">Подтвердить</button>
+            </td>
+        </tr>
+        <?php foreach ($options['data'] as $task): ?>
+            <tr>
+                <?php foreach ($task as $value): ?>
+                    <td><?= $value ?></td>
+                <?php endforeach; ?>
+                <td><input type="checkbox" name="<?= $task['id'] ?>" value="<?= $task['id'] ?>"></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+</form>

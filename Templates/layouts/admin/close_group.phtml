@@ -1,0 +1,26 @@
+<?php /** @var $options array */ ?>
+
+<nav>
+    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+</nav>
+
+<form action="/admin/course/closeGroup" method="post">
+    <table border="1">
+        <tr>
+            <td>id</td>
+            <td>Название</td>
+            <td>Имя курса</td>
+            <td>
+                <button type="submit">Закрыть</button>
+            </td>
+        </tr>
+        <?php foreach ($options['data'] as $group): ?>
+            <tr>
+                <td><?= $group['id'] ?></td>
+                <td><?= $group['group_name'] ?></td>
+                <td><?= $group['course'] ?></td>
+                <td><input type="checkbox" name="<?= $group['id'] ?>" value="<?= $group['id'] ?>"></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+</form>
