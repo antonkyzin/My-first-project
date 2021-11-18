@@ -1,21 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Controllers;
 
-use Models;
 use View\DefaultView;
 
-class IndexController
+/**
+ * @package Controllers
+ */
+class IndexController extends BaseController
 {
-    private $defaultView;
+    /**
+     * @var DefaultView
+     */
+    private DefaultView $defaultView;
 
     public function __construct()
     {
         $this->defaultView = new DefaultView();
     }
 
-    public function indexAction()
+    /**
+     * Render default page
+     * @return void
+     */
+    public function indexAction(): void
     {
-        $this->defaultView->render();
+        $options['content'] = isset($_SESSION['user']) ? 'user_main.phtml' : 'main.phtml';
+        $this->defaultView->render($options);
     }
 }
