@@ -3,10 +3,12 @@ declare(strict_types=1);
 
 namespace Models\Session;
 
+use Interfaces\IDataManagement;
+
 /**
  * @package Models\Session
  */
-class Manager
+class Manager implements IDataManagement
 {
     private ?array $data = null;
 

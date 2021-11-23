@@ -3,10 +3,12 @@ declare(strict_types=1);
 
 namespace Models\File;
 
+use Interfaces\IDataManagement;
+
 /**
  * @package Models\File
  */
-class Manager
+class Manager implements IDataManagement
 {
     private array $data;
 

@@ -3,10 +3,12 @@ declare(strict_types=1);
 
 namespace Models\Post;
 
+use Interfaces\IDataManagement;
+
 /**
  * @package Models\Post
  */
-class Manager
+class Manager implements IDataManagement
 {
     private array $data;
 

@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Models;
 
+use Interfaces\IDataManagement;
+
 /**
  * @package Models
  */
@@ -45,10 +47,10 @@ class DataRegistry
 
     /**
      * @param string $key
-     * @param object $object
+     * @param IDataManagement $object
      * @throws \Exception
      */
-    public function register(string $key, object $object): void
+    public function register(string $key, IDataManagement $object): void
     {
         if (!isset($this->registry[$key])) {
             $this->registry[$key] = $object;
@@ -57,7 +59,7 @@ class DataRegistry
         }
     }
 
-    public function get(string $key): object
+    public function get(string $key): IDataManagement
     {
         return $this->registry[$key];
     }
