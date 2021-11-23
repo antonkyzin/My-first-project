@@ -1,50 +1,83 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Controllers;
 
+use Models\DataRegistry;
+use Models\Server;
+use Models\Session;
+use Models\Post;
+use Models\File;
+
 /**
  * Main class for routing
+ *
  * @package Controllers
  */
 class FrontController
 {
     /**
      * Given controller
-     * @var string
      */
     protected string $controller;
 
     /**
      * Given action
-     * @var string
      */
     protected string $action;
 
     /**
      * Given params values
-     * @var array|null
      */
     protected ?array $params = null;
 
     /**
      * Request uri
-     * @var string
      */
     protected string $request;
 
+    /**
+     * Object for access to server data
+     */
+    private object $serverData;
+
     public function __construct()
     {
-        $this->request = $_SERVER['REQUEST_URI'];
+        $this->registerData();
+        $this->serverData = DataRegistry::getInstance()->get('server');
+    }
+
+    /**
+     * Register server and session models for encapsulating access
+     *
+     * @return void
+     * @throws \Exception
+     */
+    private function registerData(): void
+    {
+        $register = DataRegistry::getInstance();
+        $register->register('server', new Server\Manager());
+        $register->register('session', new Session\Manager());
+        $register->register('post', new Post\Manager());
+        $register->register('file', new File\Manager());
+    }
+
+    /**
+     * @return string
+     */
+    public function getRequest(): string
+    {
+        return $this->serverData->getRequestUri();
     }
 
     /**
      * Definition and selecting controller and action
+     *
      * @return void
      */
     public function start(): void
     {
+        $this->request = $this->getRequest();
         $splits = explode('/', trim($this->request, '/'));
         if ($splits[0] == 'admin') {
             $this->controller = !empty($splits[1]) ?
@@ -71,6 +104,7 @@ class FrontController
 
     /**
      * Choose the correct controller and action using reflectionClass
+     *
      * @return void
      * @throws \ReflectionException
      */
@@ -93,6 +127,7 @@ class FrontController
 
     /**
      * Return correct name for including file with class
+     *
      * @param string $name
      * @return string
      */
@@ -103,6 +138,7 @@ class FrontController
 
     /**
      * Set http response code 404, and include 404 not found page
+     *
      * @return void
      */
     public function ErrorPage404(): void
