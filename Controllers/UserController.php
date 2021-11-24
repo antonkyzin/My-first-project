@@ -3,40 +3,51 @@ declare(strict_types=1);
 
 namespace Controllers;
 
+use Models\DataRegistry;
 use Models\UserModel;
 use View\UserView;
+use Interfaces\IDataManagement;
+use Models\Post;
 
 /**
  * @package Controllers
  */
 class UserController extends BaseController
 {
-    /**
-     * @var UserModel
-     */
     private UserModel $userModel;
 
-    /**
-     * @var UserView
-     */
     private UserView $userView;
+
+    /**
+     * @var IDataManagement
+     */
+    private IDataManagement $sessionData;
+
+    /**
+     * Object for access to POST data
+     *
+     * @var Post\Manager
+     */
+    private IDataManagement $postData;
 
     public function __construct()
     {
         $this->userModel = new UserModel();
         $this->userView = new UserView();
+        $register = DataRegistry::getInstance();
+        $this->sessionData = $register->get('session');
+        $this->postData = $register->get('post');
     }
 
     /**
      * Render form for authorization
+     *
      * @return void
      */
     public function authorizationAction(): void
     {
         if (!$this->userModel->isSigned()) {
-            $options = ['title' => 'Авторизация',
-                'content' => 'login.phtml'
-            ];
+            $options = $this->userView->getOptions('Авторизация', 'login.phtml');
             $this->userView->render($options);
         } else {
             $this->homeLocation();
@@ -45,64 +56,61 @@ class UserController extends BaseController
 
     /**
      * Login action
+     *
      * @return void
      */
     public function loginAction(): void
     {
-        if ($this->checkPost()) {
-            $login = $_POST['login'];
-            $password = $_POST['password'];
+        if ($this->postData->isPost()) {
+            $login = $this->postData->getData()['login'];
+            $password = $this->postData->getData()['password'];
             $result = $this->userModel->login($login, $password);
             switch ($result) {
                 case 1 :
                     $this->homeLocation();
                     break;
                 case 2 :
-                    $errMsg = 'Мама пока не дала разрешение на вход!';
+                    $data['errMsg'] = 'Мама пока не дала разрешение на вход!';
                     break;
                 case 0 :
-                    $errMsg = 'Неверный логин или пароль!';
+                    $data['errMsg'] = 'Неверный логин или пароль!';
                     break;
                 case 3:
                     $this->location('/student/login');
             }
         } else {
-            $errMsg = 'Простите, но что-то пошло не так. Попробуйте еще раз';
+            $data['errMsg'] = 'Простите, но что-то пошло не так. Попробуйте еще раз';
         }
-        $options = ['title' => 'Авторизация',
-            'content' => 'login.phtml',
-            'errMsg' => $errMsg
-        ];
+        $options = $this->userView->getOptions('Авторизация', 'login.phtml', $data);
         $this->userView->render($options);
     }
 
     /**
      * Logout action
+     *
      * @return void
      */
     public function logoutAction(): void
     {
         if ($this->userModel->isSigned()) {
-            session_destroy();
+            $this->sessionData->destroy();
         }
         $this->homeLocation();
     }
 
     /**
      * Render form for registration
+     *
      * @param array|null $params
      * @return void
      */
     public function registrationAction(array $params = null): void
     {
         if (!$this->userModel->isSigned()) {
-            $options = [
-                'title' => 'Регистрация',
-                'content' => 'registration.phtml'
-            ];
             if (isset($params) && ($params[0] == 'family' || $params[0] == 'student')) {
-                $options['param'] = $params[0];
+                $data['user_type'] = $params[0];
             }
+            $options = $this->userView->getOptions('Регистрация', 'registration.phtml', $data);
             $this->userView->render($options);
         } else {
             $this->homeLocation();
@@ -111,25 +119,22 @@ class UserController extends BaseController
 
     /**
      * Create new user
+     *
      * @param array $params
      * @return void
      */
     public function newAction(array $params): void
     {
-        if ($this->checkPost()) {
-            $result = $this->userModel->newUser($_POST, $params[0]);
+        if ($this->postData->isPost()) {
+            $result = $this->userModel->newUser($this->postData->getData(), $params[0]);
             if ($result === 'exist') {
-                $errMsg = ('Пользователь с таким логином уже зарегистрирован.');
+                $data['errMsg'] = ('Пользователь с таким логином уже зарегистрирован.');
             } elseif ($result) {
-                $errMsg = ('Вы успешно зарегистрировались.');
+                $data['errMsg'] = ('Вы успешно зарегистрировались.');
             } else {
-                $errMsg = ('Произошла ошибка. Вы ввели некорректные данные.');
+                $data['errMsg'] = ('Произошла ошибка. Вы ввели некорректные данные.');
             }
-            $options = [
-                'title' => 'Регистрация',
-                'content' => 'registration.phtml',
-                'errMsg' => $errMsg
-            ];
+            $options = $this->userView->getOptions('Регистрация', 'registration.phtml', $data);
             $this->userView->render($options);
         } else {
             $this->homeLocation();
@@ -138,15 +143,13 @@ class UserController extends BaseController
 
     /**
      * Render form for change or delete avatar
+     *
      * @return void
      */
     public function avatarFormAction(): void
     {
         if ($this->userModel->isSigned()) {
-            $options = [
-                'title' => 'Аватар',
-                'content' => 'change_avatar.phtml'
-            ];
+            $options = $this->userView->getOptions('Аватар', 'change_avatar.phtml');
             $this->userView->render($options);
         } else {
             $this->homeLocation();
@@ -155,6 +158,7 @@ class UserController extends BaseController
 
     /**
      * Change avatar action
+     *
      * @param array $param
      * @return void
      */
@@ -163,15 +167,11 @@ class UserController extends BaseController
         if ($this->userModel->isSigned()) {
             $result = $this->userModel->changeAvatar($param[0]);
             if ($result) {
-                $errMsg = 'Аватар успешно изменён';
+                $data['errMsg'] = 'Аватар успешно изменён';
             } else {
-                $errMsg = 'Произошла ошибка';
+                $data['errMsg'] = 'Произошла ошибка';
             }
-            $options = [
-                'title' => 'Аватар',
-                'content' => 'change_avatar.phtml',
-                'errMsg' => $errMsg
-            ];
+            $options = $this->userView->getOptions('Аватар', 'change_avatar.phtml', $data);
             $this->userView->render($options);
         } else {
             $this->homeLocation();
@@ -180,6 +180,7 @@ class UserController extends BaseController
 
     /**
      * Delete avatar action
+     *
      * @param array $param
      * @return void
      */
@@ -188,15 +189,11 @@ class UserController extends BaseController
         if ($this->userModel->isSigned()) {
             $result = $this->userModel->deleteAvatar($param[0]);
             if ($result) {
-                $errMsg = 'Аватар успешно удалён';
+                $data['errMsg'] = 'Аватар успешно удалён';
             } else {
-                $errMsg = 'У вас стандартный аватар';
+                $data['errMsg'] = 'У вас стандартный аватар';
             }
-            $options = [
-                'title' => 'Аватар',
-                'content' => 'change_avatar.phtml',
-                'errMsg' => $errMsg
-            ];
+            $options = $this->userView->getOptions('Аватар', 'change_avatar.phtml', $data);
             $this->userView->render($options);
         } else {
             $this->homeLocation();

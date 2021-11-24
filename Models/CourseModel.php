@@ -8,12 +8,13 @@ namespace Models;
  */
 class CourseModel extends DataModel
 {
-    const INACTIVE_COURSE = 0;
-    const INACTIVE_GROUP = 0;
-    const ACTIVE_COURSE = 1;
+    private const INACTIVE_COURSE = 0;
+    private const INACTIVE_GROUP = 0;
+    private const ACTIVE_COURSE = 1;
 
     /**
      * Get active courses list
+     *
      * @param string|null $sortBy
      * @return array
      */
@@ -25,6 +26,7 @@ class CourseModel extends DataModel
 
     /**
      * Get groups list
+     *
      * @param string|null $whereCondition
      * @return array
      */
@@ -45,6 +47,7 @@ class CourseModel extends DataModel
 
     /**
      * Get inactive courses list
+     *
      * @param string|null $sortBy
      * @return array
      */
@@ -56,6 +59,7 @@ class CourseModel extends DataModel
 
     /**
      * Set status inactive to a course
+     *
      * @param array $data
      * @return int
      */
@@ -74,6 +78,7 @@ class CourseModel extends DataModel
 
     /**
      * Set status active to a course
+     *
      * @param array $data
      * @return int
      */
@@ -92,6 +97,7 @@ class CourseModel extends DataModel
 
     /**
      * Change course description
+     *
      * @param array $data
      * @return int
      */
@@ -106,6 +112,7 @@ class CourseModel extends DataModel
 
     /**
      * Change course price
+     *
      * @param array $data
      * @return int
      */
@@ -120,12 +127,13 @@ class CourseModel extends DataModel
 
     /**
      * Create new group
+     *
      * @param array $data
      * @return bool
      */
     public function createGroup(array $data): bool
     {
-        if ($_FILES['image']["error"] == UPLOAD_ERR_OK) {
+        if ($this->fileData->isImage()) {
             $data['image'] = $this->moveUploadFile('groups');
         }
         return $this->insertData('groups', $data);
@@ -133,6 +141,7 @@ class CourseModel extends DataModel
 
     /**
      * Set status inactive to a group
+     *
      * @param array $data
      * @return int
      */
@@ -147,6 +156,7 @@ class CourseModel extends DataModel
 
     /**
      * Get group members list
+     *
      * @param string $id
      * @return array
      */
@@ -163,6 +173,7 @@ class CourseModel extends DataModel
 
     /**
      * Get all students list
+     *
      * @return array
      */
     public function studentsList(): array
@@ -173,6 +184,7 @@ class CourseModel extends DataModel
 
     /**
      * Add a student to a group
+     *
      * @param array $data
      * @return bool
      */
@@ -189,6 +201,7 @@ class CourseModel extends DataModel
 
     /**
      * Delete a student from course claim
+     *
      * @param array $data
      * @return void
      */
@@ -202,6 +215,7 @@ class CourseModel extends DataModel
 
     /**
      * Get courses claim list
+     *
      * @return array
      */
     public function courseClaim(): array
@@ -217,6 +231,7 @@ class CourseModel extends DataModel
 
     /**
      * Get information about a course
+     *
      * @param string $courseId
      * @return array
      */
@@ -231,6 +246,7 @@ class CourseModel extends DataModel
 
     /**
      * Add a student to course claim
+     *
      * @param string $studentId
      * @param string $courseId
      * @return bool
@@ -244,7 +260,7 @@ class CourseModel extends DataModel
                 'course_id' => $courseId];
             $result = $this->insertData('course_claim', $data);
             if ($result) {
-                $_SESSION['user']['courseClaim'][] = ['course_id' => $courseId];
+                $this->sessionData->setUserData('courseClaim', ['course_id' => $courseId]);
                 return true;
             }
         }
@@ -253,6 +269,7 @@ class CourseModel extends DataModel
 
     /**
      * Get courses list with students number
+     *
      * @param string|null $whereCondition
      * @param string|null $orderBy
      * @return array
@@ -275,6 +292,7 @@ class CourseModel extends DataModel
 
     /**
      * Sort courses by params
+     *
      * @param string $sortBy
      * @param string $mode
      * @param bool $showAll
@@ -305,12 +323,13 @@ class CourseModel extends DataModel
 
     /**
      * Find a course by description or title
+     *
      * @param string $search
      * @return array
      */
     public function search(string $search): array
     {
-        $where = "course_name LIKE '%$search%' OR co.description LIKE '%$search%'";
+        $where = "status = 1 AND (course_name LIKE '%$search%' OR co.description LIKE '%$search%')";
         return $this->selectCourses($where);
     }
 
@@ -329,6 +348,7 @@ class CourseModel extends DataModel
 
     /**
      * Get facultatives list
+     *
      * @param string|null $whereCondition
      * @return array
      */
@@ -344,6 +364,7 @@ class CourseModel extends DataModel
 
     /**
      * Create new facultative
+     *
      * @param array $data
      * @return bool|int|mixed
      */
@@ -354,6 +375,7 @@ class CourseModel extends DataModel
 
     /**
      * Get information about facultative
+     *
      * @param string $id
      * @return array
      */
@@ -365,6 +387,7 @@ class CourseModel extends DataModel
 
     /**
      * Get students list on a course
+     *
      * @param string $courseID
      * @return array
      */
@@ -383,6 +406,7 @@ class CourseModel extends DataModel
 
     /**
      * Get courses list for dashboard with students number and sum revenue
+     *
      * @return array
      */
     public function getCoursesForDashboard(): array
@@ -401,6 +425,7 @@ class CourseModel extends DataModel
 
     /**
      * Get corrected data about courses for render on dashboard
+     *
      * @return array
      */
     public function getDataForDashboard(): array
@@ -434,6 +459,7 @@ class CourseModel extends DataModel
 
     /**
      * Get facultatives list for dashboard with students number and sum revenue
+     *
      * @param string $courseID
      * @return array
      */
@@ -454,6 +480,7 @@ class CourseModel extends DataModel
 
     /**
      * Get students list on a facultative
+     *
      * @param string $facultativeId
      * @return array
      */
@@ -469,6 +496,7 @@ class CourseModel extends DataModel
 
     /**
      * Count all revenue from courses and facultatives
+     *
      * @return int
      */
     public function countSumRevenue(): int
@@ -497,17 +525,19 @@ class CourseModel extends DataModel
 
     /**
      * Register student on facultative
+     *
      * @param array $data
      * @return bool
      */
     public function registerToFacultative(array $data): bool
     {
-        $data['student_id'] = $_SESSION['user']['id'];
+        $data['student_id'] = $this->sessionData->getUser()['id'];
         return $this->insertData('facultative_claim', $data);
     }
 
     /**
      * Get students claim on facultatives
+     *
      * @return array
      */
     public function facultativeClaim(): array
@@ -523,6 +553,7 @@ class CourseModel extends DataModel
 
     /**
      * Delete a student claim on facultative
+     *
      * @param $data
      * @return void
      */
@@ -536,6 +567,7 @@ class CourseModel extends DataModel
 
     /**
      * Register a student on facultative
+     *
      * @param $data
      * @return void
      */
@@ -555,6 +587,7 @@ class CourseModel extends DataModel
 
     /**
      * Set status inactive to facultative
+     *
      * @param $data
      * @return int
      */

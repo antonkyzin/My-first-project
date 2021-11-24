@@ -10,9 +10,6 @@ use Models\StudentModel;
  */
 class StudentController extends BaseController
 {
-    /**
-     * @var StudentModel
-     */
     private StudentModel $studentModel;
 
     public function __construct()
@@ -22,6 +19,7 @@ class StudentController extends BaseController
 
     /**
      * Set session data about groups and claims when a student logins
+     *
      * @return void
      */
     public function loginAction(): void

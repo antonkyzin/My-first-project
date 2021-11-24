@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Controllers\Admin;
 
 use \Controllers\BaseController;
+use Interfaces\IDataManagement;
 use Models\CourseModel;
+use Models\DataRegistry;
 use View\CourseView;
 
 /**
@@ -12,33 +14,42 @@ use View\CourseView;
  */
 class CourseController extends BaseController
 {
-    /**
-     * @var CourseModel
-     */
     private CourseModel $courseModel;
 
-    /**
-     * @var CourseView
-     */
     private CourseView $courseView;
+
+    /**
+     * Object for access to server data
+     *
+     * @var IDataManagement
+     */
+    private IDataManagement $serverData;
+
+    /**
+     * Object for access to POST data
+     *
+     * @var IDataManagement
+     */
+    private IDataManagement $postData;
 
     public function __construct()
     {
         $this->courseModel = new CourseModel();
         $this->courseView = new CourseView();
+        $this->serverData = DataRegistry::getInstance()->get('server');
+        $this->postData = DataRegistry::getInstance()->get('post');
     }
 
     /**
      * Get groups list
+     *
      * @return void
      */
     public function groupsListAction(): void
     {
         if ($this->courseModel->isAccess()) {
             $data = $this->courseModel->getGroupsList();
-            $options = ['title' => 'Список Групп',
-                'content' => 'admin/groups.phtml',
-                'data' => $data];
+            $options = $this->courseView->getOptions('Список Групп', 'admin/groups.phtml', $data);
             $this->courseView->render($options);
         } else {
             $this->homeLocation();
@@ -47,54 +58,53 @@ class CourseController extends BaseController
 
     /**
      * Render form by $param for action on a course
+     *
      * @param $param
      * @return void
      */
     public function editCoursesAction($param): void
     {
         if ($this->courseModel->isAccess()) {
-            $options = ['title' => 'Редактировать курсы'];
+            $title = 'Редактировать курсы';
             if (!isset($param)) {
-                $options['content'] = 'admin/edit_courses.phtml';
+                $content = 'admin/edit_courses.phtml';
             } else {
                 switch ($param[0]) {
                     case 'deactivate' :
                         $data = $this->courseModel->getActiveCourses();
-                        $options['content'] = 'admin/deactivate_course.phtml';
-                        $options['data'] = $data;
+                        $content = 'admin/deactivate_course.phtml';
                         break;
                     case 'activate' :
                         $data = $this->courseModel->getInactiveCourses();
-                        $options['content'] = 'admin/activate_course.phtml';
-                        $options['data'] = $data;
+                        $content = 'admin/activate_course.phtml';
                         break;
                     case 'description' :
                         $data = $this->courseModel->getActiveCourses();
-                        $options['content'] = 'admin/change_course_description.phtml';
-                        $options['data'] = $data;
+                        $content = 'admin/change_course_description.phtml';
                         break;
                     case 'price' :
                         $data = $this->courseModel->getActiveCourses();
-                        $options['content'] = 'admin/change_course_price.phtml';
-                        $options['data'] = $data;
+                        $content = 'admin/change_course_price.phtml';
                         break;
                     default :
-                        $options['content'] = 'admin/edit_courses.phtml';
+                        $content = 'admin/edit_courses.phtml';
                 }
             }
+            $options = $this->courseView->getOptions($title, $content, $data);
             $this->courseView->render($options);
         }
     }
 
     /**
      * Set status 'inactive' for a course
+     *
      * @return void
      */
     public function deactivateAction(): void
     {
         if ($this->courseModel->isAccess()) {
-            if ($this->checkPost()) {
-                $this->courseModel->deactivateCourse($_POST);
+            if ($this->postData->isPost()) {
+                $this->courseModel->deactivateCourse($this->postData->getData());
                 $this->location('/admin/course/editCourses');
             }
         } else {
@@ -104,13 +114,14 @@ class CourseController extends BaseController
 
     /**
      * Set status 'active' for a course
+     *
      * @return void
      */
     public function activateAction(): void
     {
         if ($this->courseModel->isAccess()) {
-            if ($this->checkPost()) {
-                $this->courseModel->activateCourse($_POST);
+            if ($this->postData->isPost()) {
+                $this->courseModel->activateCourse($this->postData->getData());
                 $this->location('/admin/course/editCourses');
             }
         } else {
@@ -120,13 +131,14 @@ class CourseController extends BaseController
 
     /**
      * Change description for a course
+     *
      * @return void
      */
     public function changeDescriptionAction(): void
     {
         if ($this->courseModel->isAccess()) {
-            if ($this->checkPost()) {
-                $this->courseModel->changeDescription($_POST);
+            if ($this->postData->isPost()) {
+                $this->courseModel->changeDescription($this->postData->getData());
                 $this->location('/admin/course/editCourses');
             }
         } else {
@@ -136,13 +148,14 @@ class CourseController extends BaseController
 
     /**
      * Change price for a course
+     *
      * @return void
      */
     public function changePriceAction(): void
     {
         if ($this->courseModel->isAccess()) {
-            if ($this->checkPost()) {
-                $this->courseModel->changePrice($_POST);
+            if ($this->postData->isPost()) {
+                $this->courseModel->changePrice($this->postData->getData());
                 $this->location('admin/course/editCourses');
             }
         } else {
@@ -152,15 +165,14 @@ class CourseController extends BaseController
 
     /**
      * Render form for creating new group
+     *
      * @return void
      */
     public function createGroupFormAction(): void
     {
         if ($this->courseModel->isAccess()) {
             $data = $this->courseModel->getActiveCourses();
-            $options = ['title' => 'Создать группу',
-                'content' => 'admin/create_group.phtml',
-                'data' => $data];
+            $options = $this->courseView->getOptions('Создать группу', 'admin/create_group.phtml', $data);
             $this->courseView->render($options);
         } else {
             $this->homeLocation();
@@ -169,13 +181,14 @@ class CourseController extends BaseController
 
     /**
      * Create new group
+     *
      * @return void
      */
     public function createGroupAction(): void
     {
         if ($this->courseModel->isAccess()) {
-            if ($this->checkPost()) {
-                $result = $this->courseModel->createGroup($_POST);
+            if ($this->postData->isPost()) {
+                $result = $this->courseModel->createGroup($this->postData->getData());
                 if ($result) {
                     $this->location('/admin/course/groupsList');
                 }
@@ -187,15 +200,14 @@ class CourseController extends BaseController
 
     /**
      * Render form for closing a group
+     *
      * @return void
      */
     public function closeGroupFormAction(): void
     {
         if ($this->courseModel->isAccess()) {
             $data = $this->courseModel->getGroupsList();
-            $options = ['title' => 'Закрыть группу',
-                'content' => 'admin/close_group.phtml',
-                'data' => $data];
+            $options = $this->courseView->getOptions('Закрыть группу', 'admin/close_group.phtml', $data);
             $this->courseView->render($options);
         } else {
             $this->homeLocation();
@@ -204,13 +216,14 @@ class CourseController extends BaseController
 
     /**
      * Close a group
+     *
      * @return void
      */
     public function closeGroupAction(): void
     {
         if ($this->courseModel->isAccess()) {
-            if ($this->checkPost()) {
-                $result = $this->courseModel->closeGroup($_POST);
+            if ($this->postData->isPost()) {
+                $result = $this->courseModel->closeGroup($this->postData->getData());
                 if ($result) {
                     $this->location('/admin/course/groupsList');
                 }
@@ -222,6 +235,7 @@ class CourseController extends BaseController
 
     /**
      * Get the group members list
+     *
      * @param array $param
      * @return void
      */
@@ -232,9 +246,7 @@ class CourseController extends BaseController
             $data['group'] = $param[0];
             $data['course'] = $param[1];
             $data['students'] = $this->courseModel->studentsList();
-            $options = ['title' => 'Студенты группы',
-                'content' => 'admin/group_member.phtml',
-                'data' => $data];
+            $options = $this->courseView->getOptions('Студенты группы', 'admin/group_member.phtml', $data);
             $this->courseView->render($options);
         } else {
             $this->homeLocation();
@@ -243,14 +255,15 @@ class CourseController extends BaseController
 
     /**
      * Add new student in a group
+     *
      * @return void
      */
     public function addStudentInGroupAction(): void
     {
         if ($this->courseModel->isAccess()) {
-            if ($this->checkPost()) {
-                $this->courseModel->addStudentInGroup($_POST);
-                $this->location('/admin/course/groupMember/' . $_POST['group_id'] . '/' . $_POST['course_id']);
+            if ($this->postData->isPost()) {
+                $this->courseModel->addStudentInGroup($this->postData->getData());
+                $this->location('/admin/course/groupMember/' . $this->postData->getData()['group_id'] . '/' . $this->postData->getData()['course_id']);
             }
         } else {
             $this->homeLocation();
@@ -259,15 +272,14 @@ class CourseController extends BaseController
 
     /**
      * Get request list to join in a group
+     *
      * @return void
      */
     public function courseClaimAction(): void
     {
         if ($this->courseModel->isAccess()) {
             $data = $this->courseModel->courseClaim();
-            $options = ['title' => 'Заявки',
-                'content' => 'admin/course_claim.phtml',
-                'data' => $data];
+            $options = $this->courseView->getOptions('Заявки', 'admin/course_claim.phtml', $data);
             $this->courseView->render($options);
         } else {
             $this->homeLocation();
@@ -276,6 +288,7 @@ class CourseController extends BaseController
 
     /**
      * Render form creating new group
+     *
      * @param array $param
      * @return void
      */
@@ -286,9 +299,7 @@ class CourseController extends BaseController
             $data['course'] = $param[1];
             $condition = 'course = ' . $param[1];
             $data['groups'] = $this->courseModel->getGroupsList($condition);
-            $options = ['title' => 'Добавить в группу',
-                'content' => 'admin/add_in_group.phtml',
-                'data' => $data];
+            $options = $this->courseView->getOptions('Добавить в группу', 'admin/add_in_group.phtml', $data);
             $this->courseView->render($options);
         } else {
             $this->homeLocation();
@@ -297,14 +308,15 @@ class CourseController extends BaseController
 
     /**
      * Delete data from 'groups' table
+     *
      * @return void
      */
     public function deleteFromGroupAction(): void
     {
         if ($this->courseModel->isAccess()) {
-            if ($this->checkPost()) {
-                $this->courseModel->deleteFromGroup($_POST);
-                $this->location($_SERVER['HTTP_REFERER']);
+            if ($this->postData->isPost()) {
+                $this->courseModel->deleteFromGroup($this->postData->getData());
+                $this->location($this->serverData->getReferer());
             }
         } else {
             $this->homeLocation();
@@ -313,13 +325,14 @@ class CourseController extends BaseController
 
     /**
      * Delete data from 'wait list' table
+     *
      * @return void
      */
     public function deleteFromCourseClaimAction(): void
     {
         if ($this->courseModel->isAccess()) {
-            if ($this->checkPost()) {
-                $this->courseModel->deleteFromCourseClaim($_POST);
+            if ($this->postData->isPost()) {
+                $this->courseModel->deleteFromCourseClaim($this->postData->getData());
             }
             $this->location('/admin/course/courseClaim');
         } else {
@@ -329,6 +342,7 @@ class CourseController extends BaseController
 
     /**
      * Render data about all facultative and render form for adding new facultative
+     *
      * @return void
      */
     public function facultativeAction(): void
@@ -336,9 +350,7 @@ class CourseController extends BaseController
         if ($this->courseModel->isAccess()) {
             $data['courses'] = $this->courseModel->getActiveCourses();
             $data['facultative'] = $this->courseModel->getFacultatives();
-            $options = ['title' => 'Факультативы',
-                'content' => 'admin/facultative.phtml',
-                'data' => $data];
+            $options = $this->courseView->getOptions('Факультативы', 'admin/facultative.phtml', $data);
             $this->courseView->render($options);
         } else {
             $this->homeLocation();
@@ -347,13 +359,14 @@ class CourseController extends BaseController
 
     /**
      * Creat new facultative
+     *
      * @return void
      */
     public function createFacultativeAction(): void
     {
         if ($this->courseModel->isAccess()) {
-            if ($this->checkPost()) {
-                $this->courseModel->createFacultative($_POST);
+            if ($this->postData->isPost()) {
+                $this->courseModel->createFacultative($this->postData->getData());
                 $this->location('/admin/course/facultative');
             }
         } else {
@@ -363,15 +376,14 @@ class CourseController extends BaseController
 
     /**
      * Get request list to join in a group
+     *
      * @return void
      */
     public function facultativeClaimAction(): void
     {
         if ($this->courseModel->isAccess()) {
             $data = $this->courseModel->facultativeClaim();
-            $options = ['title' => 'Заявки',
-                'content' => 'admin/facultative_claim.phtml',
-                'data' => $data];
+            $options = $this->courseView->getOptions('Заявки', 'admin/facultative_claim.phtml', $data);
             $this->courseView->render($options);
         } else {
             $this->homeLocation();
@@ -380,14 +392,15 @@ class CourseController extends BaseController
 
     /**
      * Delete data from facultative claim list
+     *
      * @return void
      */
     public function deleteFromFacultativeClaimAction(): void
     {
-        if ($this->checkPost()) {
+        if ($this->postData->isPost()) {
             if ($this->courseModel->isAccess()) {
-                $this->courseModel->deleteFromFacultativeClaim($_POST);
-                $this->location($_SERVER['HTTP_REFERER']);
+                $this->courseModel->deleteFromFacultativeClaim($this->postData->getData());
+                $this->location($this->serverData->getReferer());
             } else {
                 $this->homeLocation();
             }
@@ -398,6 +411,7 @@ class CourseController extends BaseController
 
     /**
      * Confirm a student to get a facultative
+     *
      * @param array $param
      * @return void
      */
@@ -405,7 +419,7 @@ class CourseController extends BaseController
     {
         if ($this->courseModel->isAccess()) {
             $this->courseModel->confirmFacultativeClaim($param);
-            $this->location($_SERVER['HTTP_REFERER']);
+            $this->location($this->serverData->getReferer());
         } else {
             $this->homeLocation();
         }
@@ -413,14 +427,15 @@ class CourseController extends BaseController
 
     /**
      * Set status inactive facultative
+     *
      * @return void
      */
     public function deactivateFacultativeAction(): void
     {
-        if ($this->checkPost()) {
+        if ($this->postData->isPost()) {
             if ($this->courseModel->isAccess()) {
-                $this->courseModel->deactivateFacultative($_POST);
-                $this->location($_SERVER['HTTP_REFERER']);
+                $this->courseModel->deactivateFacultative($this->postData->getData());
+                $this->location($this->serverData->getReferer());
             } else {
                 $this->homeLocation();
             }

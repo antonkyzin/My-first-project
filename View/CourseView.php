@@ -7,6 +7,7 @@ use http\Env\Request;
 
 /**
  * Class for render course's table elements
+ *
  * @package View
  */
 class CourseView extends DefaultView
@@ -23,7 +24,8 @@ class CourseView extends DefaultView
         }
         if (isset($user['courseClaim'])) {
             foreach ($user['courseClaim'] as $value) {
-                if ($value['course_id'] == $course['id']) {
+                $wqe = $value['course_id'];
+                if ($wqe == $course['id']) {
                     return 'Вы уже подали заявку';
                 }
             }
@@ -45,6 +47,7 @@ class CourseView extends DefaultView
 
     /**
      * Render element depending on type
+     *
      * @param string $type
      * @param string|null $value
      * @return string

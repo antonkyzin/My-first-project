@@ -4,32 +4,37 @@ declare(strict_types=1);
 namespace Controllers\Admin;
 
 use Controllers\BaseController;
+use Models\DataRegistry;
 use Models\UserModel;
 use View\UserView;
+use Interfaces\IDataManagement;
 
 /**
  * @package Controllers\Admin
  */
 class UserController extends BaseController
 {
-    /**
-     * @var UserModel
-     */
-    private $userModel;
+    private UserModel $userModel;
+
+    private UserView $userView;
 
     /**
-     * @var UserView
+     * Object for access to POST data
+     *
+     * @var IDataManagement
      */
-    private $userView;
+    private IDataManagement $postData;
 
     public function __construct()
     {
         $this->userModel = new UserModel();
         $this->userView = new UserView();
+        $this->postData = DataRegistry::getInstance()->get('post');
     }
 
     /**
      * Render admin user panel by param
+     *
      * @param array $param
      * @return void
      */
@@ -40,26 +45,24 @@ class UserController extends BaseController
             switch ($param[0]) {
                 case 'delete' :
                     $data = $this->userModel->adminGetAllUsers($access);
-                    $options = ['title' => 'Удаление',
-                        'content' => 'admin/delete_user.phtml',
-                        'data' => $data];
+                    $title = 'Удаление';
+                    $content = 'admin/delete_user.phtml';
                     break;
                 case 'approve' :
                     $data = $this->userModel->adminGetUsersForApprove($access);
-                    $options = ['title' => 'Подтвердить',
-                        'content' => 'admin/approve_user.phtml',
-                        'data' => $data];
+                    $title = 'Подтвердить';
+                    $content = 'admin/approve_user.phtml';
                     break;
                 case 'change' :
                     $data = $this->userModel->adminGetAllUsers($access);
-                    $options = ['title' => 'Изменить группу',
-                        'content' => 'admin/change_group_user.phtml',
-                        'data' => $data];
+                    $title = 'Изменить группу';
+                    $content = 'admin/change_group_user.phtml';
                     break;
 
                 default :
                     $this->homeLocation();
             }
+            $options = $this->userView->getOptions($title, $content, $data);
             $this->userView->render($options);
         } else {
             $this->homeLocation();
@@ -68,6 +71,7 @@ class UserController extends BaseController
 
     /**
      * Get all users list
+     *
      * @return void
      */
     public function allUsersAction(): void
@@ -75,11 +79,7 @@ class UserController extends BaseController
         $access = $this->userModel->isAccess();
         if ($access) {
             $data = $this->userModel->getAllUsers();
-            $options = [
-                'title' => 'Список пользователей',
-                'content' => 'admin/users.phtml',
-                'data' => $data
-            ];
+            $options = $this->userView->getOptions('Список пользователей', 'admin/users.phtml', $data);
             $this->userView->render($options);
         } else {
             $this->homeLocation();
@@ -88,12 +88,13 @@ class UserController extends BaseController
 
     /**
      * Delete user from database
+     *
      * @return void
      */
     public function deleteAction(): void
     {
-        if ($this->checkPost()) {
-            $result = $this->userModel->deleteUser($_POST);
+        if ($this->postData->isPost()) {
+            $result = $this->userModel->deleteUser($this->postData->getData());
             if ($result) {
                 $this->location('/admin/user/allUsers');
             }
@@ -104,12 +105,13 @@ class UserController extends BaseController
 
     /**
      * Set permission to enter in user cabinet
+     *
      * @return void
      */
     public function approveAction(): void
     {
-        if ($this->checkPost()) {
-            $result = $this->userModel->approveUser($_POST);
+        if ($this->postData->isPost()) {
+            $result = $this->userModel->approveUser($this->postData->getData());
             if ($result) {
                 $this->location('/admin/user/allUsers');
             }
@@ -118,12 +120,13 @@ class UserController extends BaseController
 
     /**
      * Change access rights for users
+     *
      * @return void
      */
     public function changeGroupAction(): void
     {
-        if ($this->checkPost()) {
-            $result = $this->userModel->updateUser($_POST);
+        if ($this->postData->isPost()) {
+            $result = $this->userModel->updateUser($this->postData->getData());
             if ($result) {
                 $this->location('/admin/user/allUsers');
             }

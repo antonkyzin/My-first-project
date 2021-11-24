@@ -8,31 +8,33 @@ namespace Models;
  */
 class TaskModel extends DataModel
 {
-    const STATUS_NEW = 3;
-    const STATUS_DONE = 2;
-    const STATUS_APPROVE = 1;
-    const STATUS_FAIL = 0;
+    private const STATUS_NEW = 3;
+    private const STATUS_DONE = 2;
+    private const STATUS_APPROVE = 1;
+    private const STATUS_FAIL = 0;
 
     /**
      * Get user's tasks list
+     *
      * @param bool $onlyNew
      * @return array|false|int|mixed
      */
     public function getMyTasks(bool $onlyNew)
     {
-        $whereCondition = $onlyNew ? '`status` = ' . self::STATUS_NEW . ' AND `executor` = ' . $_SESSION['user']['id']
-            : '`executor` = ' . $_SESSION['user']['id'];
+        $whereCondition = $onlyNew ? '`status` = ' . self::STATUS_NEW . ' AND `executor` = ' . $this->sessionData->getUser()['id']
+            : '`executor` = ' . $this->sessionData->getUser()['id'];
         return $this->getAllTasks($whereCondition);
     }
 
     /**
      * Create new task
+     *
      * @param array $data
      * @return bool|int|mixed
      */
     public function createTask(array $data)
     {
-        if ($_FILES['image']["error"] == UPLOAD_ERR_OK) {
+        if ($this->fileData->isImage()) {
             $data['image'] = $this->moveUploadFile('tasks');
         }
         $data['status'] = self::STATUS_NEW;
@@ -41,6 +43,7 @@ class TaskModel extends DataModel
 
     /**
      * Get tasks list
+     *
      * @param string|null $whereCondition
      * @return array|false|int|mixed
      */
@@ -61,6 +64,7 @@ class TaskModel extends DataModel
 
     /**
      * Get tasks list depending on access rights for admin actions
+     *
      * @param string $access
      * @return array|false|int|mixed
      */
@@ -77,6 +81,7 @@ class TaskModel extends DataModel
 
     /**
      * Delete a task
+     *
      * @param array $data
      * @return false|int
      */
@@ -89,6 +94,7 @@ class TaskModel extends DataModel
 
     /**
      * Update a task
+     *
      * @param array $data
      * @return false|int
      */
@@ -103,6 +109,7 @@ class TaskModel extends DataModel
 
     /**
      * A student reports about executed a task
+     *
      * @param array $data
      * @return false|int
      */
@@ -120,6 +127,7 @@ class TaskModel extends DataModel
 
     /**
      * Get executed tasks list depending on access rights for admin actions
+     *
      * @param string $access
      * @return array|false|int|mixed
      */
@@ -137,6 +145,7 @@ class TaskModel extends DataModel
 
     /**
      * Get failed tasks list depending on access rights for admin actions
+     *
      * @param string $access
      * @return array|false|int|mixed
      */
@@ -154,6 +163,7 @@ class TaskModel extends DataModel
 
     /**
      * Restart failed task
+     *
      * @param array $data
      * @return false|int
      */
@@ -171,6 +181,7 @@ class TaskModel extends DataModel
 
     /**
      * Set status done for a task
+     *
      * @param array $data
      * @return false|int
      */
@@ -178,7 +189,7 @@ class TaskModel extends DataModel
     {
         $id = implode(',', $data);
         $field = ['status' => self::STATUS_APPROVE,
-            'approved_by' => $_SESSION['user']['id']
+            'approved_by' => $this->sessionData->getUser()['id']
         ];
         $condition = '`id` IN (' . $id . ')';
         return $this->updateData('tasks', $field, $condition);
@@ -186,6 +197,7 @@ class TaskModel extends DataModel
 
     /**
      * Set status failed for a task if time for execution is out
+     *
      * @return false|int
      */
     public function updateStatus()
@@ -197,6 +209,7 @@ class TaskModel extends DataModel
 
     /**
      * Get users list for create new task
+     *
      * @param string $access
      * @return array|false|int|mixed
      */

@@ -4,31 +4,36 @@ declare(strict_types=1);
 namespace Controllers\Admin;
 
 use Controllers\BaseController;
+use Models\DataRegistry;
 use Models\TaskModel;
 use View\TaskView;
+use Interfaces\IDataManagement;
 
 /**
  * @package Controllers\Admin
  */
 class TaskController extends BaseController
 {
-    /**
-     * @var TaskModel
-     */
-    private $taskModel;
+    private TaskModel $taskModel;
+
+    private TaskView $taskView;
 
     /**
-     * @var TaskView
+     * Object for access to POST data
+     *
+     * @var IDataManagement
      */
-    private $taskView;
+    private IDataManagement $postData;
 
     public function __construct()
     {
         $this->taskModel = new TaskModel();
         $this->taskView = new TaskView();
+        $this->postData = DataRegistry::getInstance()->get('post');
     }
 
     /** Render admin panel by param
+     *
      * @param array $param
      */
     public function formAction(array $param): void
@@ -38,37 +43,33 @@ class TaskController extends BaseController
             switch ($param[0]) {
                 case 'delete' :
                     $data = $this->taskModel->adminGetAllTasks($access);
-                    $options = ['title' => 'Удаление',
-                        'content' => 'admin/delete_task.phtml',
-                        'data' => $data];
+                    $title = 'Удаление';
+                    $content = 'admin/delete_task.phtml';
                     break;
                 case 'change' :
                     $data = $this->taskModel->adminGetAllTasks($access);
-                    $options = ['title' => 'Изменить',
-                        'content' => 'admin/change_task.phtml',
-                        'data' => $data];
+                    $title = 'Изменить';
+                    $content = 'admin/change_task.phtml';
                     break;
                 case 'approve' :
                     $data = $this->taskModel->getDoneTasks($access);
-                    $options = ['title' => 'Подтвердить',
-                        'content' => 'admin/approve_task.phtml',
-                        'data' => $data];
+                    $title = 'Подтвердить';
+                    $content = 'admin/approve_task.phtml';
                     break;
                 case 'restart' :
                     $data = $this->taskModel->getFailTasks($access);
-                    $options = ['title' => 'Возобновить',
-                        'content' => 'admin/fail_task.phtml',
-                        'data' => $data];
+                    $title = 'Возобновить';
+                    $content = 'admin/fail_task.phtml';
                     break;
                 case 'new' :
                     $data = $this->taskModel->selectUsersForNewTask($access);
-                    $options = ['title' => 'Новая задача',
-                        'content' => 'admin/new_task.phtml',
-                        'data' => $data];
+                    $title = 'Новая задача';
+                    $content = 'admin/new_task.phtml';
                     break;
                 default :
                     $this->homeLocation();
             }
+            $options = $this->taskView->getOptions($title, $content, $data);
             $this->taskView->render($options);
         } else {
             $this->homeLocation();
@@ -77,12 +78,13 @@ class TaskController extends BaseController
 
     /**
      * Delete task
+     *
      * @return void
      */
     public function deleteAction(): void
     {
-        if ($this->checkPost()) {
-            $result = $this->taskModel->deleteTask($_POST);
+        if ($this->postData->isPost()) {
+            $result = $this->taskModel->deleteTask($this->postData->getData());
             if ($result) {
                 $this->location('/admin/task/form/delete');
             }
@@ -93,12 +95,13 @@ class TaskController extends BaseController
 
     /**
      * Change task
+     *
      * @return void
      */
     public function changeAction(): void
     {
-        if ($this->checkPost()) {
-            $result = $this->taskModel->updateTask($_POST);
+        if ($this->postData->isPost()) {
+            $result = $this->taskModel->updateTask($this->postData->getData());
             if ($result) {
                 $this->location('/task/allTasks');
             }
@@ -109,12 +112,13 @@ class TaskController extends BaseController
 
     /**
      * Confirm done task
+     *
      * @return void
      */
     public function approveAction(): void
     {
-        if ($this->checkPost()) {
-            $result = $this->taskModel->approveTask($_POST);
+        if ($this->postData->isPost()) {
+            $result = $this->taskModel->approveTask($this->postData->getData());
             if ($result) {
                 $this->location('/task/allTasks');
             }
@@ -125,12 +129,13 @@ class TaskController extends BaseController
 
     /**
      * Restart failed task
+     *
      * @return void
      */
     public function restartAction(): void
     {
-        if ($this->checkPost()) {
-            $result = $this->taskModel->restartTask($_POST);
+        if ($this->postData->isPost()) {
+            $result = $this->taskModel->restartTask($this->postData->getData());
             if ($result) {
                 $this->location('/task/allTasks');
             }
@@ -141,12 +146,13 @@ class TaskController extends BaseController
 
     /**
      * Create new task
+     *
      * @return void
      */
     public function newAction(): void
     {
-        if ($this->checkPost()) {
-            $result = $this->taskModel->createTask($_POST);
+        if ($this->postData->isPost()) {
+            $result = $this->taskModel->createTask($this->postData->getData());
             if ($result) {
                 $this->location('/task/allTasks');
             }

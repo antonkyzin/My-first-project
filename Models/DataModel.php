@@ -3,23 +3,40 @@ declare(strict_types=1);
 
 namespace Models;
 
+use Interfaces\IDataManagement;
+
 /**
  * Class for connect to database and get needed data
+ *
  * @package Models
  */
 class DataModel
 {
-    /**
-     * @var \PDO
-     */
     protected \PDO $pdo;
 
     /**
+     * Object for access to session data
+     *
+     * @var IDataManagement
+     */
+    protected IDataManagement $sessionData;
+
+    /**
+     * Object for access to file data
+     *
+     * @var IDataManagement
+     */
+    protected IDataManagement $fileData;
+
+    /**
      * Set connecting params and connect with database
+     *
      * @throws \PDOException
      */
     public function __construct()
     {
+        $this->sessionData = DataRegistry::getInstance()->get('session');
+        $this->fileData = DataRegistry::getInstance()->get('file');
         $params = require 'data/db_params.php';
         $options = array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_WARNING,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC);
@@ -34,6 +51,7 @@ class DataModel
 
     /**
      * Method for insert data to database
+     *
      * @param string $tableName
      * @param array $data
      * @return bool|int|mixed
@@ -69,6 +87,7 @@ class DataModel
 
     /**
      * Method for delete data from database without given condition
+     *
      * @param string $tableName
      * @param string $id
      * @return false|int
@@ -81,6 +100,7 @@ class DataModel
 
     /**
      * Method for delete data from database with given condition
+     *
      * @param string $tableName
      * @param string $whereCondition
      * @return false|int
@@ -93,6 +113,7 @@ class DataModel
 
     /**
      * Select data from database
+     *
      * @param string $tableName
      * @param array $field
      * @param string|null $condition
@@ -126,6 +147,7 @@ class DataModel
 
     /**
      * Select data from database with join tables
+     *
      * @param string $fromTable
      * @param array $joinTables
      * @param array $field
@@ -176,6 +198,7 @@ class DataModel
 
     /**
      * Update data in database
+     *
      * @param string $tableName
      * @param array $field
      * @param string $condition
@@ -188,9 +211,9 @@ class DataModel
         $count = count($field);
         foreach ($field as $key => $value) {
             if ($i == $count) {
-                $sql .= "`{$key}`={$this->pdo->quote($value)} ";
+                $sql .= "`{$key}`={$this->pdo->quote("$value")} ";
             } else {
-                $sql .= "`{$key}`={$this->pdo->quote($value)}, ";
+                $sql .= "`{$key}`={$this->pdo->quote("$value")}, ";
             }
             $i++;
         }
@@ -200,6 +223,7 @@ class DataModel
 
     /**
      * Count data in database
+     *
      * @param string $fromTable
      * @param string $whereCondition
      * @param string|null $joinTable
@@ -219,28 +243,31 @@ class DataModel
 
     /**
      * Get user type
+     *
      * @return false|string
      */
     public function isSigned()
     {
-        return $_SESSION['user']['type'] ?? false;
+        return $this->sessionData->getUser()['type'] ?? false;
     }
 
     /**
      * Move uploaded file from temporary folder to right folder in project
+     *
      * @param string $folder
      * @param null|string $fileName
      * @return string
      */
     public function moveUploadFile(string $folder, string $fileName = null): string
     {
-        $fileName = $fileName ?? $folder . '/' . rand() . $_FILES['image']['name'];
-        move_uploaded_file($_FILES['image']['tmp_name'], "Media/images/" . $fileName);
+        $fileName = $fileName ?? $folder . '/' . rand() . $this->fileData->getFileName('image');
+        move_uploaded_file($this->fileData->getFileTmpName('image'), "Media/images/" . $fileName);
         return $fileName;
     }
 
     /**
      * Delete file from right folder in project and delete field in database with the file name
+     *
      * @param string $table
      * @param string $id
      * @return void
@@ -259,10 +286,11 @@ class DataModel
 
     /**
      * Check access rights
+     *
      * @return false|string
      */
     public function isAccess()
     {
-        return $_SESSION['user']['access'] ?? false;
+        return $this->sessionData->getUser()['access'] ?? false;
     }
 }

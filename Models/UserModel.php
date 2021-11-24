@@ -10,6 +10,7 @@ class UserModel extends DataModel
 {
     /**
      * Check type of user and login on site
+     *
      * @param string $login
      * @param string $password
      * @return int
@@ -20,7 +21,7 @@ class UserModel extends DataModel
         if ($user && password_verify($password, $user[0]['password'])) {
             if (!isset($user[0]['approve_status']) || $user[0]['approve_status']) {
                 $this->setSessionData($user[0]);
-                if ($_SESSION['user']['type'] == 'students') {
+                if ($this->sessionData->getUser()['type'] == 'students') {
                     return 3;
                 }
                 return 1;
@@ -32,6 +33,7 @@ class UserModel extends DataModel
 
     /**
      * Check is user in database
+     *
      * @param string $login
      * @return array|false|int|mixed
      */
@@ -49,6 +51,7 @@ class UserModel extends DataModel
 
     /**
      * Create new user
+     *
      * @param array $data
      * @param string $table
      * @return bool|string
@@ -60,7 +63,7 @@ class UserModel extends DataModel
             return 'exist';
         }
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
-        if ($_FILES['image']['error'] == UPLOAD_ERR_OK) {
+        if ($this->fileData->isImage()) {
             $data['image'] = $this->moveUploadFile($table);
         } else {
             $data['image'] = $table . '/standart_avatar.jpg';
@@ -74,6 +77,7 @@ class UserModel extends DataModel
 
     /**
      * Get users list
+     *
      * @return array|false|int|mixed
      */
     public function getAllUsers()
@@ -84,6 +88,7 @@ class UserModel extends DataModel
 
     /**
      * Get users list depending on access rights
+     *
      * @param string $access
      * @return array|false|int|mixed
      */
@@ -96,6 +101,7 @@ class UserModel extends DataModel
 
     /**
      * Get users list who wasnt allowed for login on site
+     *
      * @param string $access
      * @return array|false|int|mixed
      */
@@ -109,6 +115,7 @@ class UserModel extends DataModel
 
     /**
      * Delete user from database
+     *
      * @param array $data
      * @return false|int
      */
@@ -121,6 +128,7 @@ class UserModel extends DataModel
 
     /**
      * Update "family member group" for a user
+     *
      * @param array $data
      * @return false|int
      */
@@ -134,6 +142,7 @@ class UserModel extends DataModel
 
     /**
      * Set status "allowed to login" for user
+     *
      * @param array $data
      * @return false|int
      */
@@ -146,25 +155,26 @@ class UserModel extends DataModel
     }
 
     /**
-     * Chande avatar for a user
+     * Change avatar for a user
+     *
      * @param string $table
      * @return bool|int
      */
     public function changeAvatar(string $table)
     {
-        if ($_FILES['image']['error'] == UPLOAD_ERR_OK) {
+        if ($this->fileData->isImage()) {
             $field = ['id', 'image'];
-            $id = $_SESSION['user']['id'];
+            $id = $this->sessionData->getUser()['id'];
             $condition = "`id` = '$id'";
             $user = $this->selectData($table, $field, $condition);
             if (isset($user[0]['image']) && $user[0]['image'] != $table . '/standart_avatar.jpg') {
                 $imgName = $this->moveUploadFile($table, $user[0]['image']);
-                $_SESSION['user']['image'] = $imgName;
+                $this->sessionData->setUserData('image', $imgName);
                 return true;
             } else {
                 $imgName = $this->moveUploadFile($table);
                 $field = ['image' => $imgName];
-                $_SESSION['user']['image'] = $imgName;
+                $this->sessionData->setUserData('image', $imgName);
                 return $this->updateData($table, $field, $condition);
             }
         }
@@ -173,20 +183,22 @@ class UserModel extends DataModel
 
     /**
      * Delete user's avatar from project folder and delete field in database with the avatar's title
+     *
      * @param string $table
      * @return false|int
      */
     public function deleteAvatar(string $table)
     {
-        $this->deleteFile($table, $_SESSION['user']['id']);
+        $this->deleteFile($table, $this->sessionData->getUser()['id']);
         $field = ['image' => $table . '/standart_avatar.jpg'];
-        $condition = "`id` = " . $_SESSION['user']['id'];
-        $_SESSION['user']['image'] = $table . '/standart_avatar.jpg';
+        $condition = "`id` = " . $this->sessionData->getUser()['id'];
+        $this->sessionData->setUserData('image', $table . '/standart_avatar.jpg');
         return $this->updateData($table, $field, $condition);
     }
 
     /**
      * Set session data for a user
+     *
      * @param array $user
      * @return void
      */
@@ -196,11 +208,11 @@ class UserModel extends DataModel
             if ($key == 'password') {
                 continue;
             } elseif ($key == 'family_member' && ($value == 'head' || $value == 'admin')) {
-                $_SESSION['user']['access'] = $value;
+                $this->sessionData->setUserData('access', $value);
                 continue;
             }
-            $_SESSION['user'][$key] = $value;
+            $this->sessionData->setUserData($key, $value);
         }
-        $_SESSION['user']['type'] = isset($user['family_member']) ? 'family' : 'students';
+        $this->sessionData->setUserData('type', isset($user['family_member']) ? 'family' : 'students');
     }
 }
