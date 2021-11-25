@@ -19,14 +19,12 @@ class UserController extends BaseController
     private UserView $userView;
 
     /**
-     * @var IDataManagement
+     * Object for access to SESSION data
      */
     private IDataManagement $sessionData;
 
     /**
      * Object for access to POST data
-     *
-     * @var Post\Manager
      */
     private IDataManagement $postData;
 
@@ -106,6 +104,7 @@ class UserController extends BaseController
      */
     public function registrationAction(array $params = null): void
     {
+        $data = [];
         if (!$this->userModel->isSigned()) {
             if (isset($params) && ($params[0] == 'family' || $params[0] == 'student')) {
                 $data['user_type'] = $params[0];

@@ -18,15 +18,11 @@ class CourseController extends BaseController
 
     /**
      * Object for access to session data
-     *
-     * @var IDataManagement
      */
     private IDataManagement $sessionData;
 
     /**
      * Object for access to POST data
-     *
-     * @var IDataManagement
      */
     private IDataManagement $postData;
 

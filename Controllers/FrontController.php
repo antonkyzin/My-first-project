@@ -8,6 +8,7 @@ use Models\Server;
 use Models\Session;
 use Models\Post;
 use Models\File;
+use Models\Config;
 
 /**
  * Main class for routing
@@ -45,6 +46,7 @@ class FrontController
     {
         $this->registerData();
         $this->serverData = DataRegistry::getInstance()->get('server');
+
     }
 
     /**
@@ -56,10 +58,11 @@ class FrontController
     private function registerData(): void
     {
         $register = DataRegistry::getInstance();
-        $register->register('server', new Server\Manager());
-        $register->register('session', new Session\Manager());
-        $register->register('post', new Post\Manager());
-        $register->register('file', new File\Manager());
+        $register->register('server', new Server\Manager())
+            ->register('session', new Session\Manager())
+            ->register('post', new Post\Manager())
+            ->register('file', new File\Manager())
+            ->register('config', new Config\Manager);
     }
 
     /**

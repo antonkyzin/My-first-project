@@ -20,15 +20,11 @@ class CourseController extends BaseController
 
     /**
      * Object for access to server data
-     *
-     * @var IDataManagement
      */
     private IDataManagement $serverData;
 
     /**
      * Object for access to POST data
-     *
-     * @var IDataManagement
      */
     private IDataManagement $postData;
 

@@ -20,8 +20,6 @@ class TaskController extends BaseController
 
     /**
      * Object for access to POST data
-     *
-     * @var IDataManagement
      */
     private IDataManagement $postData;
 

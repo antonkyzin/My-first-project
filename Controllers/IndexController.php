@@ -16,8 +16,6 @@ class IndexController extends BaseController
 
     /**
      * Object for access to session data
-     *
-     * @var IDataManagement
      */
     private IDataManagement $sessionData;
 

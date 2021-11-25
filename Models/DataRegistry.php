@@ -48,19 +48,30 @@ class DataRegistry
     /**
      * @param string $key
      * @param IDataManagement $object
+     * @return $this
      * @throws \Exception
      */
-    public function register(string $key, IDataManagement $object): void
+    public function register(string $key, IDataManagement $object): DataRegistry
     {
         if (!isset($this->registry[$key])) {
             $this->registry[$key] = $object;
         } else {
             throw new \Exception('Item with the same key already exists.');
         }
+        return $this;
     }
 
+    /**
+     * @param string $key
+     * @return IDataManagement
+     * @throws \Exception
+     */
     public function get(string $key): IDataManagement
     {
-        return $this->registry[$key];
+        if (!isset($this->registry[$key])) {
+            throw new \Exception('Item with key: ' . $key . ' not found');
+        } else {
+            return $this->registry[$key];
+        }
     }
 }

@@ -52,6 +52,7 @@ class Manager implements IDataManagement
      *
      * @param string $key
      * @param string|array $data
+     * @return void
      */
     public function setUserData(string $key, $data): void
     {

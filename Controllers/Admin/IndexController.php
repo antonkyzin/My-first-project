@@ -16,8 +16,6 @@ class IndexController
 
     /**
      * Object for access to session data
-     *
-     * @var IDataManagement
      */
     private IDataManagement $sessionData;
 

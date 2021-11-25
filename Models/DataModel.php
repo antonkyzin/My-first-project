@@ -16,28 +16,32 @@ class DataModel
 
     /**
      * Object for access to session data
-     *
-     * @var IDataManagement
      */
     protected IDataManagement $sessionData;
 
     /**
      * Object for access to file data
      *
-     * @var IDataManagement
      */
     protected IDataManagement $fileData;
+
+    /**
+     *
+     */
+    protected IDataManagement $config;
 
     /**
      * Set connecting params and connect with database
      *
      * @throws \PDOException
+     * @throws \Exception
      */
     public function __construct()
     {
         $this->sessionData = DataRegistry::getInstance()->get('session');
         $this->fileData = DataRegistry::getInstance()->get('file');
-        $params = require 'data/db_params.php';
+        $this->config = DataRegistry::getInstance()->get('config');
+        $params = $this->config->getDBdata();
         $options = array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_WARNING,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC);
         $dsn = "mysql:host={$params['host']};dbname={$params['dbname']}; charset={$params['charset']}";
