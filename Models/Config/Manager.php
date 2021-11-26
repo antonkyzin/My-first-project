@@ -25,7 +25,7 @@ class Manager implements IDataManagement
     public function getDBdata(): array
     {
         if (!isset($this->data['db_params'])) {
-            throw new \Exception('Needed params or file does not exist');
+            throw new \PDOException('Params for connecting to database does not exist');
         }
         return $this->data['db_params'];
     }

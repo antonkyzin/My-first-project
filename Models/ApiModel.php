@@ -35,7 +35,7 @@ class ApiModel extends DataModel
     /**
      * @return string
      */
-    public function getApiKey(): string
+    private function getApiKey(): string
     {
         return $this->config->getNewPostApiKey();
     }
@@ -49,7 +49,7 @@ class ApiModel extends DataModel
      * @param array|null $params
      * @return string
      */
-    public function setOptions(string $apiKey, string $model, string $method, array $params = null): string
+    private function setOptions(string $apiKey, string $model, string $method, array $params = null): string
     {
         $options =
             [
@@ -66,7 +66,7 @@ class ApiModel extends DataModel
      * @param string $options
      * @return false|resource
      */
-    public function curlInit(string $options)
+    private function curlInit(string $options)
     {
         $curl = curl_init('https://api.novaposhta.ua/v2.0/json/');
         curl_setopt($curl, CURLOPT_POST, 1);
@@ -80,7 +80,7 @@ class ApiModel extends DataModel
      * @return array
      * @throws \Exception
      */
-    public function curlExec($curl): array
+    private function curlExec($curl): array
     {
         $errMsg = '';
         $output = curl_exec($curl);

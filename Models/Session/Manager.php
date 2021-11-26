@@ -56,11 +56,11 @@ class Manager implements IDataManagement
      */
     public function setUserData(string $key, $data): void
     {
-        if (isset($_SESSION['user'][$key]) && is_array($_SESSION['user'][$key])) {
-            $_SESSION['user'][$key][] = $data;
+        if (isset($this->data['user'][$key]) && is_array($this->data['user'][$key])) {
+            $this->data['user'][$key][] = $data;
         } else {
-            $_SESSION['user'][$key] = $data;
+            $this->data['user'][$key] = $data;
         }
-        $this->initialize();
+        $_SESSION['user'] = $this->data['user'];
     }
 }

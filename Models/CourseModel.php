@@ -272,9 +272,9 @@ class CourseModel extends DataModel
      *
      * @param string|null $whereCondition
      * @param string|null $orderBy
-     * @return array
+     * @return array|false
      */
-    public function selectCourses(string $whereCondition = null, string $orderBy = null): array
+    public function selectCourses(string $whereCondition = null, string $orderBy = null)
     {
         $sql = "SELECT DISTINCT co.id, co.course_name, co.description, co.price,  
                 (SELECT COUNT(gs.student_id) FROM `groups_students` gs LEFT JOIN `groups` g ON gs.group_id = g.id WHERE g.course = co.id) AS students,
@@ -286,8 +286,15 @@ class CourseModel extends DataModel
         if (isset($orderBy)) {
             $sql .= ' ORDER BY ' . $orderBy;
         }
-        $result = $this->pdo->query($sql);
-        return $result->fetchAll();
+        try {
+            $pdo = $this->DbConnection();
+            $result = $pdo->query($sql);
+            return $result->fetchAll();
+        } catch (\PDOException $PDOException) {
+            $this->logger->log($PDOException->getMessage() . $PDOException->getTraceAsString());
+        }
+
+        return false;
     }
 
     /**
@@ -407,9 +414,9 @@ class CourseModel extends DataModel
     /**
      * Get courses list for dashboard with students number and sum revenue
      *
-     * @return array
+     * @return array|false
      */
-    public function getCoursesForDashboard(): array
+    public function getCoursesForDashboard()
     {
         $sql = 'SELECT cou.id, cou.course_name, cou.description, cou.status AS course_status, gr.status AS group_status, cou.price,
                 COUNT(grst.student_id) AS count_students, 
@@ -419,8 +426,15 @@ class CourseModel extends DataModel
                 LEFT JOIN `groups_students` grst ON gr.id = grst.group_id
                 GROUP BY cou.id, gr.status
                 ORDER BY `cou`.`id` ASC';
-        $result = $this->pdo->query($sql);
-        return $result->fetchAll();
+        try {
+            $pdo = $this->DbConnection();
+            $result = $pdo->query($sql);
+            return $result->fetchAll();
+        } catch (\PDOException $PDOException) {
+            $this->logger->log($PDOException->getMessage() . $PDOException->getTraceAsString());
+        }
+
+        return false;
     }
 
     /**
@@ -461,9 +475,9 @@ class CourseModel extends DataModel
      * Get facultatives list for dashboard with students number and sum revenue
      *
      * @param string $courseID
-     * @return array
+     * @return array|false
      */
-    public function facultativesOnCourse(string $courseID): array
+    public function facultativesOnCourse(string $courseID)
     {
         $sql = "SELECT fa.id, fa.title, fa.price,
                 COUNT(DISTINCT fastu.student_id) AS students_count,
@@ -474,53 +488,82 @@ class CourseModel extends DataModel
                 JOIN `facultative_students` fastu ON fa.id = fastu.facultative_id
                 WHERE fa.course = $courseID
                 GROUP BY fa.id, fa.status";
-        $result = $this->pdo->query($sql);
-        return $result->fetchAll();
+        try {
+            $pdo = $this->DbConnection();
+            $result = $pdo->query($sql);
+            return $result->fetchAll();
+        } catch (\PDOException $PDOException) {
+            $this->logger->log($PDOException->getMessage() . $PDOException->getTraceAsString());
+        }
+
+        return false;
     }
 
     /**
      * Get students list on a facultative
      *
      * @param string $facultativeId
-     * @return array
+     * @return array|false
      */
-    public function getStudentsOnFacultative(string $facultativeId): array
+    public function getStudentsOnFacultative(string $facultativeId)
     {
         $sql = 'SELECT DISTINCT s.id, s.name
                 FROM `students`s
                 JOIN `facultative_students` f on f.student_id = s.id
                 WHERE f.facultative_id = ' . $facultativeId;
-        $result = $this->pdo->query($sql);
-        return $result->fetchAll();
+        try {
+            $pdo = $this->DbConnection();
+            $result = $pdo->query($sql);
+            return $result->fetchAll();
+        } catch (\PDOException $PDOException) {
+            $this->logger->log($PDOException->getMessage() . $PDOException->getTraceAsString());
+        }
+
+        return false;
     }
 
     /**
      * Count all revenue from courses and facultatives
      *
-     * @return int
+     * @return int|false
      */
-    public function countSumRevenue(): int
+    public function countSumRevenue()
     {
         $sql = 'SELECT COUNT(grst.student_id) * co.price AS course_summ
                 FROM `courses` co
                 LEFT JOIN `groups` gr ON co.id = gr.course 
                 LEFT JOIN `groups_students` grst ON gr.id = grst.group_id
                 GROUP BY co.id';
-        $result = $this->pdo->query($sql);
-        $coursesRevenue = $result->fetchAll();
+
+        try {
+            $pdo = $this->DbConnection();
+            $result = $pdo->query($sql);
+            $coursesRevenue = $result->fetchAll();
+        } catch (\PDOException $PDOException) {
+            $this->logger->log($PDOException->getMessage() . $PDOException->getTraceAsString());
+        }
         $sql = 'SELECT SUM(fastu.lessons_number) * fa.price AS SUMM
                 FROM `facultative` fa
                 JOIN `facultative_students` fastu ON fa.id = fastu.facultative_id
                 GROUP BY fa.id';
-        $result = $this->pdo->query($sql);
-        $facultativesRevenue = $result->fetchAll();
-        $allRevenue = 0;
-        foreach (array_merge($coursesRevenue, $facultativesRevenue) as $item) {
-            foreach ($item as $value) {
-                $allRevenue += $value;
-            }
+        try {
+            $pdo = $this->DbConnection();
+            $result = $pdo->query($sql);
+            $facultativesRevenue = $result->fetchAll();
+        } catch (\PDOException $PDOException) {
+            $this->logger->log($PDOException->getMessage() . $PDOException->getTraceAsString());
         }
-        return $allRevenue;
+        $allRevenue = 0;
+        if (isset($coursesRevenue) && isset($facultativesRevenue)) {
+            foreach (array_merge($coursesRevenue, $facultativesRevenue) as $item) {
+                foreach ($item as $value) {
+                    $allRevenue += $value;
+                }
+            }
+            return $allRevenue;
+        }
+
+        return false;
     }
 
     /**

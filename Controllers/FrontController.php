@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace Controllers;
 
+use Interfaces\IDataManagement;
 use Models\DataRegistry;
+use Models\Logger;
 use Models\Server;
 use Models\Session;
 use Models\Post;
@@ -40,13 +42,24 @@ class FrontController
     /**
      * Object for access to server data
      */
-    private object $serverData;
+    private IDataManagement $serverData;
+
+    public Logger $logger;
+
 
     public function __construct()
     {
-        $this->registerData();
-        $this->serverData = DataRegistry::getInstance()->get('server');
-
+        $this->logger = new Logger();
+        try {
+            $this->registerData();
+        } catch (\Exception $exception) {
+            $this->logger->log($exception->getMessage() . $exception->getTraceAsString());
+        }
+        try {
+            $this->serverData = DataRegistry::getInstance()->get('server');
+        } catch (\Exception $exception) {
+            $this->logger->log($exception->getMessage() . $exception->getTraceAsString());
+        }
     }
 
     /**

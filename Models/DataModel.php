@@ -12,8 +12,6 @@ use Interfaces\IDataManagement;
  */
 class DataModel
 {
-    protected \PDO $pdo;
-
     /**
      * Object for access to session data
      */
@@ -25,10 +23,9 @@ class DataModel
      */
     protected IDataManagement $fileData;
 
-    /**
-     *
-     */
     protected IDataManagement $config;
+
+    public Logger $logger;
 
     /**
      * Set connecting params and connect with database
@@ -38,19 +35,24 @@ class DataModel
      */
     public function __construct()
     {
+        $this->logger = new Logger();
         $this->sessionData = DataRegistry::getInstance()->get('session');
         $this->fileData = DataRegistry::getInstance()->get('file');
         $this->config = DataRegistry::getInstance()->get('config');
-        $params = $this->config->getDBdata();
+
+    }
+
+    /**
+     * @return \PDO
+     */
+    protected function DbConnection(): \PDO
+    {
+        $db_params = $this->config->getDBdata();
         $options = array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_WARNING,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC);
-        $dsn = "mysql:host={$params['host']};dbname={$params['dbname']}; charset={$params['charset']}";
-        try {
-            $this->pdo = new \PDO($dsn, $params['user'], $params['password'], $options);
-            return $this->pdo;
-        } catch (\PDOException $e) {
-            return $e->getCode();
-        }
+        $dsn = "mysql:host={$db_params['host']};dbname={$db_params['dbname']}; charset={$db_params['charset']}";
+
+        return new \PDO($dsn, $db_params['user'], $db_params['password'], $options);
     }
 
     /**
@@ -58,10 +60,10 @@ class DataModel
      *
      * @param string $tableName
      * @param array $data
-     * @return bool|int|mixed
+     * @return bool
      * @throws \PDOException
      */
-    public function insertData(string $tableName, array $data)
+    public function insertData(string $tableName, array $data): bool
     {
         $insert = "INSERT INTO `{$tableName}` (";
         $values = 'VALUES (';
@@ -79,14 +81,18 @@ class DataModel
         }
         $sql = $insert . $values;
         try {
-            $stmt = $this->pdo->prepare($sql);
+            $pdo = $this->DbConnection();
+            $stmt = $pdo->prepare($sql);
             foreach ($data as $field => $value) {
                 $stmt->bindValue(":{$field}", $value);
             }
             return $stmt->execute();
-        } catch (\PDOException $e) {
-            return $e->getCode();
+
+        } catch (\Throwable $exception) {
+            $this->logger->log($exception->getMessage() . $exception->getTraceAsString());
         }
+
+        return false;
     }
 
     /**
@@ -99,7 +105,14 @@ class DataModel
     public function deleteData(string $tableName, string $id)
     {
         $sql = "DELETE FROM `{$tableName}` WHERE `id` IN ($id)";
-        return $this->pdo->exec($sql);
+        try {
+            $pdo = $this->DbConnection();
+            return $pdo->exec($sql);
+        } catch (\PDOException $PDOException) {
+            $this->logger->log($PDOException->getMessage() . $PDOException->getTraceAsString());
+        }
+
+        return false;
     }
 
     /**
@@ -112,7 +125,14 @@ class DataModel
     public function deleteDataWithWhere(string $tableName, string $whereCondition)
     {
         $sql = "DELETE FROM `{$tableName}` WHERE $whereCondition";
-        return $this->pdo->exec($sql);
+        try {
+            $pdo = $this->DbConnection();
+            return $pdo->exec($sql);
+        } catch (\PDOException $PDOException) {
+            $this->logger->log($PDOException->getMessage() . $PDOException->getTraceAsString());
+        }
+
+        return false;
     }
 
     /**
@@ -121,8 +141,7 @@ class DataModel
      * @param string $tableName
      * @param array $field
      * @param string|null $condition
-     * @return array|false|int|mixed
-     * @throws \PDOException
+     * @return array|false
      */
     public function selectData(string $tableName, array $field, string $condition = null)
     {
@@ -142,11 +161,14 @@ class DataModel
             $sql .= " WHERE {$condition}";
         }
         try {
-            $result = $this->pdo->query($sql);
+            $pdo = $this->DbConnection();
+            $result = $pdo->query($sql);
             return $result->fetchAll();
-        } catch (\PDOException $e) {
-            return $e->getCode();
+        } catch (\PDOException $PDOException) {
+            $this->logger->log($PDOException->getMessage() . $PDOException->getTraceAsString());
         }
+
+        return false;
     }
 
     /**
@@ -157,8 +179,7 @@ class DataModel
      * @param array $field
      * @param array $joinConditions
      * @param string|null $whereCondition
-     * @return array|false|int|mixed
-     * @throws \PDOException
+     * @return array|false
      */
     public function selectJoinData(string $fromTable, array $joinTables, array $field, array $joinConditions, string $whereCondition = null)
     {
@@ -193,11 +214,14 @@ class DataModel
         }
         $sql = trim($sql);
         try {
-            $result = $this->pdo->query($sql);
+            $pdo = $this->DbConnection();
+            $result = $pdo->query($sql);
             return $result->fetchAll();
-        } catch (\PDOException $e) {
-            return $e->getCode();
+        } catch (\PDOException $PDOException) {
+            $this->logger->log($PDOException->getMessage() . $PDOException->getTraceAsString());
         }
+
+        return false;
     }
 
     /**
@@ -222,7 +246,14 @@ class DataModel
             $i++;
         }
         $sql .= "WHERE {$condition}";
-        return $this->pdo->exec($sql);
+        try {
+            $pdo = $this->DbConnection();
+            return $pdo->exec($sql);
+        } catch (\PDOException $PDOException) {
+            $this->logger->log($PDOException->getMessage() . $PDOException->getTraceAsString());
+        }
+
+        return false;
     }
 
     /**
@@ -241,8 +272,15 @@ class DataModel
             $sql .= "LEFT JOIN `$joinTable` $joinTable[0] ON $joinCondition ";
         }
         $sql .= 'WHERE ' . $whereCondition;
-        $result = $this->pdo->query($sql);
-        return $result->fetchAll();
+        try {
+            $pdo = $this->DbConnection();
+            $result = $pdo->query($sql);
+            return $result->fetchAll();
+        } catch (\PDOException $PDOException) {
+            $this->logger->log($PDOException->getMessage() . $PDOException->getTraceAsString());
+        }
+
+        return false;
     }
 
     /**

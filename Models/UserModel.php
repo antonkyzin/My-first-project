@@ -17,18 +17,19 @@ class UserModel extends DataModel
      */
     public function login(string $login, string $password): int
     {
+        $returnCase = 0;
         $user = $this->userExist($login);
         if ($user && password_verify($password, $user[0]['password'])) {
+            $returnCase = 2;
             if (!isset($user[0]['approve_status']) || $user[0]['approve_status']) {
+                $returnCase = 1;
                 $this->setSessionData($user[0]);
                 if ($this->sessionData->getUser()['type'] == 'students') {
                     return 3;
                 }
-                return 1;
             }
-            return 2;
         }
-        return 0;
+        return $returnCase;
     }
 
     /**
