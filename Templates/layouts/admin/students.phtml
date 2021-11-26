@@ -1,12 +1,12 @@
 <?php /**
  * @var $options array
- * @var $this \View\StudentView
+ * @var $this \View\DefaultView
  */ ?>
 
 <nav>
-    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+    <a href="<?= $this->serverData->getReferer() ?>">Назад</a>
 </nav>
-<table border="1">
+<table class="table table-bordered">
     <tr>
         <td>id</td>
         <td>Имя</td>

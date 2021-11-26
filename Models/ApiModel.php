@@ -3,11 +3,20 @@ declare(strict_types=1);
 
 namespace Models;
 
+use Interfaces\IDataManagement;
+
 /**
  * @package Models
  */
-class ApiModel extends DataModel
+class ApiModel
 {
+    private IDataManagement $config;
+
+    public function __construct()
+    {
+        $this->config = new Config\Manager();
+    }
+
     /**
      * @return array
      * @throws \Exception

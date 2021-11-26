@@ -4,7 +4,7 @@
  */ ?>
 
 <nav>
-    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+    <a href="<?= $this->serverData->getReferer() ?>">Назад</a>
     <a href="/admin/task/form/new">Создать</a>
     <a href="/admin/task/form/delete">Удалить</a>
     <a href="/admin/task/form/change">Изменить</a>
@@ -12,7 +12,8 @@
     <a href="/admin/task/form/restart">Возобновить</a>
     <a href="/task/updateStatus">Обновить</a>
 </nav>
-<table border="1">
+<?php echo $options['data']['errMsg'] ?? '' ?>
+<table class="table table-bordered">
     <tr>
         <td>id</td>
         <td>Время создания</td>
@@ -26,7 +27,7 @@
         <td>Подтверждено кем</td>
         <td>Изображение</td>
     </tr>
-    <?php foreach ($options['data'] as $task): ?>
+    <?php foreach ($options['data']['tasks'] as $task): ?>
         <tr>
             <?php foreach ($task as $key => $value): ?>
                 <td><?= $this->renderElement($key, $value) ?></td>

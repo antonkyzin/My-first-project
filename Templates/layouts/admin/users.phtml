@@ -4,14 +4,14 @@
  */ ?>
 
 <nav>
-    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+    <a href="<?= $this->serverData->getReferer() ?>">Назад</a>
     <a href="/admin/user/form/delete">Удалить</a>
     <a href="/admin/user/form/approve">Подтвердить</a>
     <?php if ($options['user']['access'] == 'head'): ?>
         <a href="/admin/user/form/change">Изменить группу</a>
     <?php endif; ?>
 </nav>
-<table border="1">
+<table class="table table-bordered">
     <tr>
         <td>id</td>
         <td>Имя</td>

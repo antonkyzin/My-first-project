@@ -4,10 +4,10 @@
  */ ?>
 
 <nav>
-    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+    <a href="<?= $this->serverData->getReferer() ?>">Назад</a>
 </nav>
 
-<table border="1">
+<table class="table table-bordered">
     <tr>
         <td>Название</td>
         <td>Описание</td>
@@ -28,6 +28,6 @@
                 <br>
             <?php endforeach; ?>
         </td>
-        <td><?= $this->renderLink($options['data']['course'], ($options['data']['user'] ?? null)) ?></td>
+        <td><?= $this->renderLink($options['data']['course'], $options['data']['user']) ?></td>
     </tr>
 </table>

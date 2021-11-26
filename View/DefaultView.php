@@ -15,15 +15,11 @@ class DefaultView
 {
     /**
      * Object for access to session data
-     *
-     * @var IDataManagement
      */
     protected IDataManagement $sessionData;
 
     /**
      * Object for access to server data
-     *
-     * @var IDataManagement
      */
     protected IDataManagement $serverData;
 
@@ -36,19 +32,20 @@ class DefaultView
     /**
      * Maim method for rendering data
      *
-     * @param null|array $options
+     * @param array $options
      * @return void
      */
-    public function render(array $options = null): void
+    public function render(array $options): void
     {
-//        $options = $this->getOptions($options);
         include_once 'Templates/index.phtml';
     }
 
     /**
      * Set default options for rendering if it's needed
      *
-     * @param array $options
+     * @param string $title
+     * @param string $content
+     * @param array|null $data
      * @return array
      */
     public function getOptions(string $title, string $content, array $data = null): array

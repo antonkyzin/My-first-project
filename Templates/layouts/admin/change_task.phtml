@@ -1,11 +1,14 @@
-<?php /** @var $options array */ ?>
+<?php /**
+ * @var $options array
+ * @var $this \View\DefaultView
+ */ ?>
 
 <nav>
-    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+    <a href="<?= $this->serverData->getReferer() ?>">Назад</a>
 </nav>
 
 <form action="/admin/task/change" method="post">
-    <table border="1">
+    <table class="table table-bordered">
         <tr>
             <td>id</td>
             <td>Исполнитель</td>

@@ -8,10 +8,9 @@
 <?php else: ?>
     <?php include_once 'student_menu.phtml'; ?>
 <?php endif; ?>
-<?php echo isset($options['errMsg']) ? $options['errMsg'] : '' ?>
-<?php if (isset($options['data'])): ?>
+<?php echo $options['data']['errMsg'] ?? '' ?>
+<?php if (isset($options['data']['tasks'])): ?>
     <?php if ($options['user']['type'] == 'family'): ?>
         <?php include_once 'user_tasks.phtml'; ?>
-<!--    --><?php //else: include_once 'courses.phtml'; ?>
     <?php endif; ?>
 <?php endif; ?>

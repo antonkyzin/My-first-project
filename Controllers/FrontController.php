@@ -52,10 +52,6 @@ class FrontController
         $this->logger = new Logger();
         try {
             $this->registerData();
-        } catch (\Exception $exception) {
-            $this->logger->log($exception->getMessage() . $exception->getTraceAsString());
-        }
-        try {
             $this->serverData = DataRegistry::getInstance()->get('server');
         } catch (\Exception $exception) {
             $this->logger->log($exception->getMessage() . $exception->getTraceAsString());

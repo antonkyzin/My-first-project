@@ -1,12 +1,12 @@
 <?php /** @var $options array */ ?>
 <h2>Добро пожаловать! Пройдите регистрацию</h2>
-<?php echo isset($options['errMsg']) ? $options['errMsg'] : '' ?>
-<?php if (!isset($options['param'])): ?>
+<?php echo $options['data']['errMsg'] ?? '' ?>
+<?php if (!isset($options['data']['user_type'])): ?>
     <p>
         <a href="/user/registration/family">Я - член семьи</a>
         <a href="/user/registration/student">Я - студент</a>
     </p>
-<?php elseif ($options['param'] == 'family'): ?>
+<?php elseif ($options['data']['user_type'] == 'family'): ?>
     <form action="/user/new/users" method="post" enctype="multipart/form-data">
         <label>Логин:</label>
         <input name="login" type="text" required size="30"/>
@@ -34,7 +34,7 @@
         <br>
         <button type="submit">Зарегистрировать</button>
     </form>
-<?php elseif ($options['param'] == 'student'): ?>
+<?php elseif ($options['data']['user_type'] == 'student'): ?>
     <form action="/user/new/students" method="post" enctype="multipart/form-data">
         <label>Логин:</label>
         <input name="login" type="text" required size="30"/>

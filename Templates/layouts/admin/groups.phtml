@@ -4,11 +4,11 @@
  */ ?>
 
 <nav>
-    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+    <a href="<?= $this->serverData->getReferer() ?>">Назад</a>
     <a href="/admin/course/createGroupForm/">Создать группу</a>
     <a href="/admin/course/closeGroupForm/">Закрыть группу</a>
 </nav>
-<table border="1">
+<table class="table table-bordered">
     <tr>
         <td>id</td>
         <td>Название</td>

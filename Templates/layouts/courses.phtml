@@ -21,9 +21,9 @@
     <input type="text" name="search">
     <button type="submit">Найти</button>
 </form>
-<?php echo $options['errMsg'] ?? null ?>
+<?php echo $options['data']['errMsg'] ?? null ?>
 <?php if (isset($options['data'])): ?>
-    <table border="1">
+    <table class="table table-bordered">
         <tr>
             <td>Название</td>
             <td>Описание</td>
@@ -31,7 +31,7 @@
             <td>Студенты</td>
             <td>Факультативы</td>
         </tr>
-        <?php foreach ($options['data'] as $course): ?>
+        <?php foreach ($options['data']['courses'] as $course): ?>
             <tr>
                 <td><?= $course['course_name'] ?></td>
                 <td><?= $course['description'] ?></td>

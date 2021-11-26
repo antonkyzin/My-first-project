@@ -1,11 +1,11 @@
 <?php /** @var $options array */ ?>
 
 <nav>
-    <a href="<?= $_SERVER['HTTP_REFERER'] ?>">Назад</a>
+    <a href="<?= $this->serverData->getReferer() ?>">Назад</a>
 </nav>
 
 <form action="/admin/course/changeDescription" method="post">
-    <table border="1">
+    <table class="table table-bordered">
         <tr>
             <td>id</td>
             <td>Название</td>
