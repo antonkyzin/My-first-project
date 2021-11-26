@@ -1,0 +1,36 @@
+<?php /**
+ * @var $options array
+ * @var $this \View\TaskView
+ */ ?>
+<nav>
+    <a href="<?= $this->getRefererUri() ?>">Назад</a>
+</nav>
+
+<form action="/admin/user/changeGroup" method="post">
+    <table class="table table-bordered">
+        <tr>
+            <td>id</td>
+            <td>Имя</td>
+            <td>Группа</td>
+            <td>
+                <button type="submit">Изменить</button>
+            </td>
+        </tr>
+        <?php foreach ($options['data'] as $task): ?>
+            <tr>
+                <?php foreach ($task as $value): ?>
+                    <td><?= $value ?></td>
+                <?php endforeach; ?>
+                <td><input type="checkbox" name="<?= $task['id'] ?>" value="<?= $task['id'] ?>"></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+    <br>
+    <label>Выберите группу</label>
+    <select name="family_member">
+        <option value="children">Дети</option>
+        <option value="relatives">Родственники</option>
+        <option value="admin">Админ</option>
+        <option value="head">Главный Админ</option>
+    </select>
+</form>

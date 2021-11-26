@@ -1,21 +1,26 @@
 <?php
+declare(strict_types=1);
 
 namespace View;
 
+/**
+ * @package View
+ */
 class UserView extends DefaultView
 {
-    public function renderUserElement($type, $value)
+    /**
+     * Render a user element
+     *
+     * @param string $type
+     * @param string|null $value
+     * @return string|null
+     */
+    public function renderElement(string $type, string $value = null)
     {
-        switch ($type) {
-            case 'image' :
-                $result = isset($value) ? "<img src='/Media/images/users/" . $value . "' width='50' height='50' alt='$value'>" : $value;
-                break;
-            case 'approve_status' :
-                $result = $value ? 'подтверждён' : 'не подтверждён';
-                break;
-            default :
-                $result = $value;
+        $value = parent::renderElement($type, $value);
+        if ($type == 'approve_status') {
+            $value = $value ? 'подтверждён' : 'не подтверждён';
         }
-        return $result;
+        return $value;
     }
 }

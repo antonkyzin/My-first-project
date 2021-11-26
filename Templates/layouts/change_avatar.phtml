@@ -1,9 +1,15 @@
-<?php echo isset($errMsg) ? $errMsg : ''?>
-<form action="/user/changeAvatar" method="post" enctype="multipart/form-data">
+<?php /** @var $options array */ ?>
+<?php echo isset($errMsg) ? $errMsg : '' ?>
+<form action="/user/changeAvatar/<?=($options['user']['type'] == 'students' ? 'students' : 'users')?>" method="post" enctype="multipart/form-data">
     <input type="file" name="image">
     <button type="submit">Отправить</button>
 </form>
 <br>
-<form action="/user/deleteAvatar" method="post">
+<form action="/user/deleteAvatar/<?=($options['user']['type'] == 'students' ? 'students' : 'users')?>" method="post">
     <button type="submit">Удалить аватар</button>
 </form>
+<p>
+<form action="/" method="post">
+    <button type="submit">Назад</button>
+</form>
+</p>

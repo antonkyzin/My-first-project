@@ -1,0 +1,30 @@
+<?php /**
+ * @var $options array
+ * @var $this \View\DefaultView
+ */ ?>
+<br>
+<nav>
+    <a href="<?= $this->getRefererUri() ?>">Назад</a>
+</nav>
+<br>
+<form action="/task/userExecTask" method="post">
+    <table class="table table-bordered">
+        <tr>
+            <td>id</td>
+            <td>Задание</td>
+            <td>
+                <button type="submit">Выполнить</button>
+            </td>
+        </tr>
+        <?php foreach ($options['data'] as $task): ?>
+            <tr>
+                <td><?= $task['id'] ?></td>
+                <td><?= $task['task'] ?></td>
+                <td><input type="checkbox" name="<?= $task['id'] ?>" value="<?= $task['id'] ?>"></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+    <br>
+    <label>Комментарий</label>
+    <input type="text" name="comment">
+</form>

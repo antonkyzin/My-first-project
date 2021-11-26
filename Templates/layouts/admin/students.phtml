@@ -1,0 +1,24 @@
+<?php /**
+ * @var $options array
+ * @var $this \View\DefaultView
+ */ ?>
+
+<nav>
+    <a href="<?= $this->getRefererUri() ?>">Назад</a>
+</nav>
+<table class="table table-bordered">
+    <tr>
+        <td>id</td>
+        <td>Имя</td>
+        <td>e-mail</td>
+        <td>Дата рождения</td>
+        <td>Фото</td>
+    </tr>
+    <?php foreach ($options['data'] as $student): ?>
+        <tr>
+            <?php foreach ($student as $key => $value): ?>
+                <td><?=$this->renderElement($key, $value) ?></td>
+            <?php endforeach; ?>
+        </tr>
+    <?php endforeach; ?>
+</table>

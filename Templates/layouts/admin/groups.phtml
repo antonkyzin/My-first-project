@@ -1,0 +1,31 @@
+<?php /**
+ * @var $options array
+ * @var $this \View\CourseView
+ */ ?>
+
+<nav>
+    <a href="<?= $this->getRefererUri() ?>">Назад</a>
+    <a href="/admin/course/createGroupForm/">Создать группу</a>
+    <a href="/admin/course/closeGroupForm/">Закрыть группу</a>
+</nav>
+<table class="table table-bordered">
+    <tr>
+        <td>id</td>
+        <td>Название</td>
+        <td>Описание</td>
+        <td>Расписание</td>
+        <td>Имя курса</td>
+        <td>Фото</td>
+        <td>Статус</td>
+        <td>Кол-во студентов</td>
+    </tr>
+    <?php foreach ($options['data'] as $group): ?>
+        <tr>
+            <?php foreach ($group as $key => $value): ?>
+                <?php if ($key == 'course_id') continue; ?>
+                <?= $this->renderElement($key, $value) ?>
+            <?php endforeach; ?>
+            <td><a href="/admin/course/groupMember/<?= $group['id'] ?>/<?= $group['course_id'] ?>">Просмотр</a></td>
+        </tr>
+    <?php endforeach; ?>
+</table>

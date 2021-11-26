@@ -1,20 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Controllers;
 
+/**
+ * Base controller for extends with base methods
+ *
+ * @package Controllers
+ */
 class BaseController
 {
-    protected function checkPost()
-    {
-        return $_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST);
-    }
-
-    public function location($url)
+    /**
+     * Set header Location by url
+     *
+     * @param string $url
+     * @return void
+     */
+    public function location(string $url): void
     {
         header("Location: $url");
     }
 
-    public function homeLocation()
+    /**
+     * Set header Location home
+     *
+     * @return void
+     */
+    public function homeLocation(): void
     {
         header('Location: /');
     }

@@ -1,5 +1,8 @@
 /.idea/
 /.htaccess
-/Media/images/users/
-/Media/images/tasks/
+/Media/images/
 !/Media/images/users/standart_avatar.jpg
+!/Media/images/students/standart_avatar.jpg
+!/Media/images/groups/standart_avatar.jpg
+!/Media/images/logos
+logs/

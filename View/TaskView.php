@@ -1,33 +1,36 @@
 <?php
+declare(strict_types=1);
 
 namespace View;
 
+/**
+ * @package View
+ */
 class TaskView extends DefaultView
 {
-    public function renderTaskElement($type, $value)
+    /**
+     * @param string $type
+     * @param string|null $value
+     * @return string|null
+     */
+    public function renderElement(string $type, string $value = null)
     {
-        switch ($type) {
-            case 'image' :
-                $result = isset($value) ? "<img src='/Media/images/tasks/" . $value . "' width='50' height='50' alt='$value'>" : $value;
-                break;
-            case 'status' :
-                switch ($value) {
-                    case 3 :
-                        $result = 'новое';
-                        break;
-                    case 2 :
-                        $result = 'выполнено';
-                        break;
-                    case 1 :
-                        $result = 'подтверждено';
-                        break;
-                    default :
-                        $result = 'провалено';
-                }
-                break;
-            default :
-                $result = $value;
+        $value = parent::renderElement($type, $value);
+        if ($type == 'status') {
+            switch ($value) {
+                case 3 :
+                    $value = 'новое';
+                    break;
+                case 2 :
+                    $value = 'выполнено';
+                    break;
+                case 1 :
+                    $value = 'подтверждено';
+                    break;
+                default :
+                    $value = 'провалено';
+            }
         }
-        return $result;
+        return $value;
     }
 }

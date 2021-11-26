@@ -1,0 +1,29 @@
+<?php /**
+ * @var $options array
+ * @var $this \View\DefaultView
+ */ ?>
+
+<nav>
+    <a href="<?= $this->getRefererUri() ?>">Назад</a>
+</nav>
+
+<form action="/admin/task/delete" method="post">
+    <table class="table table-bordered">
+        <tr>
+            <td>id</td>
+            <td>Исполнитель</td>
+            <td>Задание</td>
+            <td>
+                <button type="submit">Удалить</button>
+            </td>
+        </tr>
+        <?php foreach ($options['data'] as $task): ?>
+            <tr>
+                <?php foreach ($task as $value): ?>
+                    <td><?= $value ?></td>
+                <?php endforeach; ?>
+                <td><input type="checkbox" name="<?= $task['id'] ?>" value="<?= $task['id'] ?>"></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+</form>

@@ -1,104 +1,222 @@
 <?php
+declare(strict_types=1);
 
 namespace Models;
 
+/**
+ * @package Models
+ */
 class TaskModel extends DataModel
 {
-    const STATUS_NEW = 3;
-    const STATUS_DONE = 2;
-    const STATUS_APPROVE = 1;
-    const STATUS_FAIL = 0;
+    private const STATUS_NEW = 3;
+    private const STATUS_DONE = 2;
+    private const STATUS_APPROVE = 1;
+    private const STATUS_FAIL = 0;
 
-    public function createTask($data)
+    /**
+     * Get user's tasks list
+     *
+     * @param bool $onlyNew
+     * @return array|false|int|mixed
+     */
+    public function getMyTasks(bool $onlyNew)
     {
-        if ($_FILES['image']["error"] == UPLOAD_ERR_OK) {
+        $whereCondition = $onlyNew ? '`status` = ' . self::STATUS_NEW . ' AND `executor` = ' . $this->sessionData->getUser()['id']
+            : '`executor` = ' . $this->sessionData->getUser()['id'];
+        return $this->getAllTasks($whereCondition);
+    }
+
+    /**
+     * Create new task
+     *
+     * @param array $data
+     * @return bool|int|mixed
+     */
+    public function createTask(array $data)
+    {
+        if ($this->fileData->isImage()) {
             $data['image'] = $this->moveUploadFile('tasks');
         }
         $data['status'] = self::STATUS_NEW;
         return $this->insertData('tasks', $data);
     }
 
-    public function getAllTasks($whereCondition = null)
+    /**
+     * Get tasks list
+     *
+     * @param string|null $whereCondition
+     * @return array|false|int|mixed
+     */
+    public function getAllTasks(string $whereCondition = null)
     {
         $field = [
-            't.id', 'time_created', 'u1.name AS created_by', 'u2.name AS executor', 'u3.family_member AS family_member', 'task',
-            'status', 'time_start', 'time_end', 'comment', 'u4.name AS approved_by', 't.image'
+            't.id', 'time_created', 'u1.name AS created_by', 'u2.name AS executor', 'task',
+            'status', 'time_start', 'time_end', 'comment', 'u3.name AS approved_by', 't.image'
         ];
         $joinCondition = [
-            'created_by' => 'u1.id',
-            'executor' => 'u2.id',
-            't.executor' => 'u3.id',
-            'approved_by' => 'u4.id'
-
+            ['created_by' => 'u1.id',
+                'executor' => 'u2.id',
+                'approved_by' => 'u3.id']
         ];
-        return $this->selectJoinData('tasks', 'users', $field, $joinCondition, $whereCondition);
+        $joinTables = ['users'];
+        return $this->selectJoinData('tasks', $joinTables, $field, $joinCondition, $whereCondition);
     }
 
+    /**
+     * Get tasks list depending on access rights for admin actions
+     *
+     * @param string $access
+     * @return array|false|int|mixed
+     */
+    public function adminGetAllTasks(string $access)
+    {
+        $whereCondition = ($access == 'admin') ? "u1.family_member = 'children'" : null;
+        $field = ['t.id', 'u1.name AS executor', 'task'];
+        $joinCondition = [
+            ['executor' => 'u1.id']
+        ];
+        $joinTables = ['users'];
+        return $this->selectJoinData('tasks', $joinTables, $field, $joinCondition, $whereCondition);
+    }
+
+    /**
+     * Delete a task
+     *
+     * @param array $data
+     * @return false|int
+     */
     public function deleteTask(array $data)
     {
         $id = implode(',', $data);
-        $this->deleteFile('tasks', $id, 'tasks');
+        $this->deleteFile('tasks', $id);
         return $this->deleteData('tasks', $id);
     }
 
-    public function updateTask($data)
+    /**
+     * Update a task
+     *
+     * @param array $data
+     * @return false|int
+     */
+    public function updateTask(array $data)
     {
-        $field = ['task' => $data['task']];
-        $condition = '`id` = ' . $data['id'];
+        $task = array_pop($data);
+        $id = implode(',', $data);
+        $field = ['task' => $task];
+        $condition = '`id` IN (' . $id . ')';
         return $this->updateData('tasks', $field, $condition);
     }
 
-    public function getMyTasks()
+    /**
+     * A student reports about executed a task
+     *
+     * @param array $data
+     * @return false|int
+     */
+    public function execTask(array $data)
     {
-        $whereCondition = '`executor` = ' . $_SESSION['id'];
-        return $this->getAllTasks($whereCondition);
-    }
-
-    public function execTask($data)
-    {
+        $comment = array_pop($data);
+        $id = implode(',', $data);
         $filed = [
             'status' => self::STATUS_DONE,
-            'comment' => $data['comment']
+            'comment' => $comment
         ];
-        $condition = '`id` = ' . $data['id'];
+        $condition = '`id` IN (' . $id . ')';
         return $this->updateData('tasks', $filed, $condition);
     }
 
-    public function getDoneTasks()
+    /**
+     * Get executed tasks list depending on access rights for admin actions
+     *
+     * @param string $access
+     * @return array|false|int|mixed
+     */
+    public function getDoneTasks(string $access)
     {
-        $whereCondition = '`status` = ' . self::STATUS_DONE;
-        return $this->getAllTasks($whereCondition);
+        $field = ['t.id', 'u1.name AS executor', 'task'];
+        $joinCondition = [
+            ['executor' => 'u1.id']
+        ];
+        $whereCondition = ($access == 'admin') ? "u1.family_member = 'children' AND status = " . self::STATUS_DONE
+            : 'status = ' . self::STATUS_DONE;
+        $joinTables = ['users'];
+        return $this->selectJoinData('tasks', $joinTables, $field, $joinCondition, $whereCondition);
     }
 
-    public function updateTaskStatus()
+    /**
+     * Get failed tasks list depending on access rights for admin actions
+     *
+     * @param string $access
+     * @return array|false|int|mixed
+     */
+    public function getFailTasks(string $access)
+    {
+        $field = ['t.id', 'u1.name AS executor', 'task'];
+        $joinCondition = [
+            ['executor' => 'u1.id']
+        ];
+        $whereCondition = ($access == 'admin') ? "u1.family_member = 'children' AND status = " . self::STATUS_FAIL
+            : 'status = ' . self::STATUS_FAIL;
+        $joinTables = ['users'];
+        return $this->selectJoinData('tasks', $joinTables, $field, $joinCondition, $whereCondition);
+    }
+
+    /**
+     * Restart failed task
+     *
+     * @param array $data
+     * @return false|int
+     */
+    public function restartTask(array $data)
+    {
+        $timeEnd = array_pop($data);
+        $id = implode(',', $data);
+        $field = [
+            'time_end' => $timeEnd,
+            'status' => self::STATUS_NEW
+        ];
+        $condition = '`id` IN (' . $id . ')';
+        return $this->updateData('tasks', $field, $condition);
+    }
+
+    /**
+     * Set status done for a task
+     *
+     * @param array $data
+     * @return false|int
+     */
+    public function approveTask(array $data)
+    {
+        $id = implode(',', $data);
+        $field = ['status' => self::STATUS_APPROVE,
+            'approved_by' => $this->sessionData->getUser()['id']
+        ];
+        $condition = '`id` IN (' . $id . ')';
+        return $this->updateData('tasks', $field, $condition);
+    }
+
+    /**
+     * Set status failed for a task if time for execution is out
+     *
+     * @return false|int
+     */
+    public function updateStatus()
     {
         $field = ['status' => self::STATUS_FAIL];
         $condition = '`time_end` < NOW() AND `status` =' . self::STATUS_NEW;
-        $this->updateData('tasks', $field, $condition);
-    }
-
-    public function getFailTasks()
-    {
-        $whereCondition = '`status` = ' . self::STATUS_FAIL;
-        return $this->getAllTasks($whereCondition);
-    }
-
-    public function restartTask($data)
-    {
-        $field = [
-            'time_end' => $data['time_end'],
-            'status' => self::STATUS_NEW
-        ];
-        $condition = '`id` = ' . $data['id'];
         return $this->updateData('tasks', $field, $condition);
     }
 
-    public function approveTask($data)
+    /**
+     * Get users list for create new task
+     *
+     * @param string $access
+     * @return array|false|int|mixed
+     */
+    public function selectUsersForNewTask(string $access)
     {
-        $field = ['status' => self::STATUS_APPROVE,
-            'approved_by' => $_SESSION['id']
-        ];
-        $condition = '`id` = ' . $data['id'];
-        return $this->updateData('tasks', $field, $condition);
+        $field = ['id', 'name'];
+        $condition = ($access == 'admin') ? "family_member = 'children'" : null;
+        return $this->selectData('users', $field, $condition);
     }
 }

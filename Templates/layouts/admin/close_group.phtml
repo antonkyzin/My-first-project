@@ -1,0 +1,29 @@
+<?php /**
+ * @var $options array
+ * @var $this View\DefaultView
+ */ ?>
+
+<nav>
+    <a href="<?= $this->getRefererUri() ?>">Назад</a>
+</nav>
+
+<form action="/admin/course/closeGroup" method="post">
+    <table class="table table-bordered">
+        <tr>
+            <td>id</td>
+            <td>Название</td>
+            <td>Имя курса</td>
+            <td>
+                <button type="submit">Закрыть</button>
+            </td>
+        </tr>
+        <?php foreach ($options['data'] as $group): ?>
+            <tr>
+                <td><?= $group['id'] ?></td>
+                <td><?= $group['group_name'] ?></td>
+                <td><?= $group['course'] ?></td>
+                <td><input type="checkbox" name="<?= $group['id'] ?>" value="<?= $group['id'] ?>"></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+</form>

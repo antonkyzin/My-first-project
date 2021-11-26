@@ -1,100 +1,219 @@
 <?php
+declare(strict_types=1);
 
 namespace Models;
 
+/**
+ * @package Models
+ */
 class UserModel extends DataModel
 {
-    public function login($login, $password)
+    /**
+     * Check type of user and login on site
+     *
+     * @param string $login
+     * @param string $password
+     * @return int
+     */
+    public function login(string $login, string $password): int
     {
+        $returnCase = 0;
         $user = $this->userExist($login);
-        if ($user && password_verify($password, $user[0]['password']) && ($user[0]['approve_status'])) {
-            $_SESSION['login'] = $login;
-            $_SESSION['id'] = $user[0]['id'];
-            return 1;
-        } elseif ($user && !$user[0]['approve_status']) {
-            return 2;
+        if ($user && password_verify($password, $user[0]['password'])) {
+            $returnCase = 2;
+            if (!isset($user[0]['approve_status']) || $user[0]['approve_status']) {
+                $returnCase = 1;
+                $this->setSessionData($user[0]);
+                if ($this->sessionData->getUser()['type'] == 'students') {
+                    return 3;
+                }
+            }
         }
-        return 0;
+        return $returnCase;
     }
 
-    public function userExist($login)
+    /**
+     * Check is user in database
+     *
+     * @param string $login
+     * @return array|false|int|mixed
+     */
+    public function userExist(string $login)
     {
-        $field = ['id', 'login', 'password', 'approve_status'];
         $condition = "`login` = '$login'";
-        return $this->selectData('users', $field, $condition);
+        $field = ['id', 'login', 'password', 'name', 'approve_status', 'family_member', 'image'];
+        $result = $this->selectData('users', $field, $condition);
+        if (!$result) {
+            $field = ['id', 'login', 'password', 'name', 'e_mail', 'image'];
+            $result = $this->selectData('students', $field, $condition);
+        }
+        return $result;
     }
 
-    public function newUser(array $data)
+    /**
+     * Create new user
+     *
+     * @param array $data
+     * @param string $table
+     * @return bool|string
+     */
+    public function newUser(array $data, string $table)
     {
         $user = $this->userExist($data['login']);
         if ($user) {
             return 'exist';
         }
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
-        if ($_FILES['image']['error'] == UPLOAD_ERR_OK) {
-            $data['image'] = $this->moveUploadFile('users');
+        if ($this->fileData->isImage()) {
+            $data['image'] = $this->moveUploadFile($table);
         } else {
-            $data['image'] = 'standart_avatar.jpg';
+            $data['image'] = $table . '/standart_avatar.jpg';
         }
-        $result = $this->insertData('users', $data);
+        $result = $this->insertData($table, $data);
         if ($result) {
             return true;
         }
         return false;
     }
 
+    /**
+     * Get users list
+     *
+     * @return array|false|int|mixed
+     */
     public function getAllUsers()
     {
         $field = ['id', 'name', 'family_member', 'age', 'address', 'approve_status', 'image'];
         return $this->selectData('users', $field);
     }
 
+    /**
+     * Get users list depending on access rights
+     *
+     * @param string $access
+     * @return array|false|int|mixed
+     */
+    public function adminGetAllUsers(string $access)
+    {
+        $condition = ($access == 'admin') ? '`family_member` = \'children\'' : '`family_member` != \'head\'';
+        $field = ['id', 'name', 'family_member'];
+        return $this->selectData('users', $field, $condition);
+    }
+
+    /**
+     * Get users list who wasnt allowed for login on site
+     *
+     * @param string $access
+     * @return array|false|int|mixed
+     */
+    public function adminGetUsersForApprove(string $access)
+    {
+        $condition = ($access == 'admin') ? '`family_member` = \'children\' AND `approve_status` = \'0\''
+            : '`approve_status` = 0';
+        $field = ['id', 'name', 'family_member'];
+        return $this->selectData('users', $field, $condition);
+    }
+
+    /**
+     * Delete user from database
+     *
+     * @param array $data
+     * @return false|int
+     */
     public function deleteUser(array $data)
     {
         $id = implode(',', $data);
-        $this->deleteFile('users', $id, 'users');
+        $this->deleteFile('users', $id);
         return $this->deleteData('users', $id);
     }
 
+    /**
+     * Update "family member group" for a user
+     *
+     * @param array $data
+     * @return false|int
+     */
     public function updateUser(array $data)
     {
-        $field['family_member'] = $data['status'];
-        $condition = '`id` = ' . $data['id'];
+        $field['family_member'] = array_pop($data);
+        $id = implode(',', $data);
+        $condition = '`id` IN (' . $id . ')';
         return $this->updateData('users', $field, $condition);
-
     }
 
-    public function approveUser($data)
+    /**
+     * Set status "allowed to login" for user
+     *
+     * @param array $data
+     * @return false|int
+     */
+    public function approveUser(array $data)
     {
+        $id = implode(',', $data);
         $field['approve_status'] = 1;
-        $condition = '`id` = ' . $data['id'];
+        $condition = '`id` IN (' . $id . ')';
         return $this->updateData('users', $field, $condition);
     }
 
-    public function changeAvatar()
+    /**
+     * Change avatar for a user
+     *
+     * @param string $table
+     * @return bool|int
+     */
+    public function changeAvatar(string $table)
     {
-        if ($_FILES['image']['error'] == UPLOAD_ERR_OK) {
-            $field = ['login', 'image'];
-            $login = $_SESSION['login'];
-            $condition = "`login` = '$login'";
-            $user = $this->selectData('users', $field, $condition);
-            if (isset($user[0]['image']) && $user[0]['image'] != 'standart_avatar.jpg') {
-                $imgName = $this->moveUploadFile('users', $user[0]['image']);
+        if ($this->fileData->isImage()) {
+            $field = ['id', 'image'];
+            $id = $this->sessionData->getUser()['id'];
+            $condition = "`id` = '$id'";
+            $user = $this->selectData($table, $field, $condition);
+            if (isset($user[0]['image']) && $user[0]['image'] != $table . '/standart_avatar.jpg') {
+                $imgName = $this->moveUploadFile($table, $user[0]['image']);
+                $this->sessionData->setUserData('image', $imgName);
                 return true;
             } else {
-                $imgName = $this->moveUploadFile('users');
+                $imgName = $this->moveUploadFile($table);
                 $field = ['image' => $imgName];
-                return $this->updateData('users', $field, $condition);
+                $this->sessionData->setUserData('image', $imgName);
+                return $this->updateData($table, $field, $condition);
             }
         }
         return false;
     }
 
-    public function deleteAvatar()
+    /**
+     * Delete user's avatar from project folder and delete field in database with the avatar's title
+     *
+     * @param string $table
+     * @return false|int
+     */
+    public function deleteAvatar(string $table)
     {
-        $this->deleteFile('users', $_SESSION['id'], 'users');
-        $field = ['image' => 'standart_avatar.jpg'];
-        $condition = "`id` = " . $_SESSION['id'];
-        return $this->updateData('users', $field, $condition);
+        $this->deleteFile($table, $this->sessionData->getUser()['id']);
+        $field = ['image' => $table . '/standart_avatar.jpg'];
+        $condition = "`id` = " . $this->sessionData->getUser()['id'];
+        $this->sessionData->setUserData('image', $table . '/standart_avatar.jpg');
+        return $this->updateData($table, $field, $condition);
+    }
+
+    /**
+     * Set session data for a user
+     *
+     * @param array $user
+     * @return void
+     */
+    private function setSessionData(array $user): void
+    {
+        foreach ($user as $key => $value) {
+            if ($key == 'password') {
+                continue;
+            } elseif ($key == 'family_member' && ($value == 'head' || $value == 'admin')) {
+                $this->sessionData->setUserData('access', $value);
+                continue;
+            }
+            $this->sessionData->setUserData($key, $value);
+        }
+        $this->sessionData->setUserData('type', isset($user['family_member']) ? 'family' : 'students');
     }
 }

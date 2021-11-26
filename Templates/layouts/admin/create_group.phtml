@@ -1,0 +1,24 @@
+<?php /** @var $options array */ ?>
+
+<form action="/admin/course/createGroup" enctype="multipart/form-data" method="post">
+    <label>Название группы</label>
+    <input type="text" name="group_name" required>
+    <br>
+    <label>Описание</label>
+    <input type="text" name="description" required>
+    <br>
+    <label>Расписание</label>
+    <input type="text" name="schedule" required>
+    <br>
+    <label>Курс</label>
+    <select multiple name="course" required>
+        <?php foreach ($options['data'] as $course): ?>
+            <option value="<?= $course['id'] ?>"><?= $course['course_name'] ?></option>
+        <?php endforeach; ?>
+    </select>
+    <br>
+    <label>Фото группы</label>
+    <input type="file" name="image">
+    <br>
+    <button type="submit">Создать</button>
+</form>

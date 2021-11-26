@@ -1,0 +1,21 @@
+<?php /** @var $options array */ ?>
+<?php echo $options['data']['errMsg'] ?? null ?>
+<?php if (isset($options['data']['api'])): ?>
+    <form action="/api/getCities" method="post">
+        <button type="submit">Показать города</button>
+    </form>
+    <div class="container mt-5">
+        <div class="row post-list">
+            <?php foreach ($options['data']['api'] as $item): ?>
+                <div class="card" style="width: 15rem;">
+                    <div class="card-body">
+                        <h5 class="card-title"><?= $item['Description'] ?? null ?></h5>
+                        <p class="card-text"><?= $item['AreaDescription'] ?? null ?></p>
+                        <p class="card-text"><?= $item['SettlementTypeDescription'] ?? null ?></p>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+<?php endif; ?>
+

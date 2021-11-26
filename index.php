@@ -6,13 +6,12 @@ set_include_path(get_include_path()
     . PATH_SEPARATOR . 'View');
 
 spl_autoload_register(function ($class) {
-    $path = str_replace('\\', '/', $class).'.php';
-    if (file_exists($path)){
-        $parts = explode('\\', $class);
-        include_once(end($parts) . '.php');
-    }});
+    $path = str_replace('\\', '/', $class) . '.php';
+    if (file_exists($path)) {
+        include_once($path);
+    }
+});
 
 session_start();
-
-$front = Controllers\FrontController::getInstance();
+$front = new Controllers\FrontController;
 $front->route();

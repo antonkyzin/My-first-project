@@ -1,0 +1,28 @@
+<?php /**
+ * @var $options array
+ * @var $this \View\DefaultView
+ */ ?>
+
+<nav>
+    <a href="<?= $this->getRefererUri() ?>">Назад</a>
+</nav>
+
+<form action="/admin/course/deactivate" method="post">
+    <table class="table table-bordered">
+        <tr>
+            <td>id</td>
+            <td>Курс</td>
+            <td>
+                <button type="submit">Деактивировать</button>
+            </td>
+        </tr>
+        <?php foreach ($options['data'] as $course): ?>
+            <tr>
+                <?php foreach ($course as $value): ?>
+                    <td><?= $value ?></td>
+                <?php endforeach; ?>
+                <td><input type="checkbox" name="<?= $course['id'] ?>" value="<?= $course['id'] ?>"></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+</form>

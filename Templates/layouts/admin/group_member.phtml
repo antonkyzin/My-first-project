@@ -1,0 +1,37 @@
+<?php /**
+ * @var $options array
+ * @var $this \View\DefaultView
+ * */ ?>
+
+<nav>
+    <a href="<?= $this->getRefererUri() ?>">Назад</a>
+</nav>
+
+<form action="/admin/course/deleteFromGroup" method="post">
+    <table class="table table-bordered">
+        <tr>
+            <td>Имя</td>
+            <td>
+                <button type="submit">Удалить</button>
+            </td>
+        </tr>
+        <?php foreach ($options['data']['members'] as $student): ?>
+            <tr>
+                <td><?= $student['name'] ?></td>
+                <td><input type="checkbox" name="<?= $student['id'] ?>" value="<?= $options['data']['group'] ?>"></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+</form>
+
+<h3>Добавить студента в группу</h3>
+<form action="/admin/course/addStudentInGroup" method="post">
+    <input type="text" name="group_id" value="<?= $options['data']['group'] ?>" hidden>
+    <select name="student_id">
+        <?php foreach ($options['data']['students'] as $student): ?>
+            <option value="<?= $student['id'] ?>"><?= $student['name'] ?></option>
+        <?php endforeach; ?>
+    </select>
+    <input type="text" name="course_id" value="<?= ($options['data']['course']) ?>" hidden>
+    <button type="submit">Добавить</button>
+</form>

@@ -1,188 +1,121 @@
 <?php
+declare(strict_types=1);
 
 namespace Controllers;
 
+use Models\DataRegistry;
 use Models\TaskModel;
 use View\TaskView;
+use Interfaces\IDataManagement;
 
+/**
+ * @package Controllers
+ */
 class TaskController extends BaseController
 {
-    private $taskModel;
-    private $taskView;
+    private TaskModel $taskModel;
+    private TaskView $taskView;
+
+    /**
+     * Object for access to session data
+     */
+    private IDataManagement $sessionData;
+
+    /**
+     * Object for access to POST data
+     */
+    private IDataManagement $postData;
 
     public function __construct()
     {
         $this->taskModel = new TaskModel();
         $this->taskView = new TaskView();
+        $this->sessionData = DataRegistry::getInstance()->get('session');
+        $this->postData = DataRegistry::getInstance()->get('post');
     }
 
-    public function newTaskAction($message = null)
+    /**
+     * Get tasks list for a user
+     *
+     * @return void
+     */
+    public function myTasksAction(): void
     {
         $isSigned = $this->taskModel->isSigned();
-        if ($isSigned) {
-            $usersName = $this->taskModel->selectData('users', ['id', 'name', 'family_member']);
-            $options = [
-                'title' => 'Новое задание',
-                'content' => 'new_task.phtml',
-                'usersName' => $usersName
-            ];
-            $this->taskView->render($options, $message);
+        if ($isSigned == 'family') {
+            $data['tasks'] = $this->taskModel->getMyTasks(false);
+            if (!$data) {
+                $data['errMsg'] = 'Задания отсутствуют';
+            }
+            $options = $this->taskView->getOptions('Список заданий', 'user_main.phtml', $data);
+            $this->taskView->render($options);
         } else {
             $this->homeLocation();
         }
     }
 
-    public function createTaskAction()
-    {
-        if ($this->checkPost()) {
-            $result = $this->taskModel->createTask($_POST);
-            if ($result) {
-                $message = ('Задание успешно создано!');
-            } else {
-                $message = ('Задание не создано. Заполните все поля!');
-            }
-            $this->newTaskAction($message);
-        }
-    }
-
-    public function allTasksAction()
+    /**
+     * Get tasks list
+     *
+     * @return void
+     */
+    public function allTasksAction(): void
     {
         $isSigned = $this->taskModel->isSigned();
-        if ($isSigned) {
+        if ($isSigned == 'family') {
             $allTasks = $this->taskModel->getAllTasks();
-            $options = [
-                'title' => 'Список заданий',
-                'content' => 'all_tasks.phtml',
-                'allTasks' => $allTasks
-            ];
-            if ($allTasks) {
-                $this->taskView->render($options);
-            } else {
-                $errMsg = 'Задания отсутствуют';
-                $this->taskView->render($options, $errMsg);
+            if (!$allTasks) {
+                $data['errMsg'] = 'Задания отсутствуют';
             }
+            $title = 'Список заданий';
+            $data['tasks'] = $allTasks;
+            $content = isset($this->sessionData->getUser()['access']) ? 'admin/tasks.phtml' : 'user_main.phtml';
+            $options = $this->taskView->getOptions($title, $content, $data);
+            $this->taskView->render($options);
         } else {
             $this->homeLocation();
         }
     }
 
-    public function deleteTaskAction()
+    /**
+     * Render form for reporting about executed a task
+     *
+     * @return void
+     */
+    public function doneFormAction(): void
     {
-        if ($this->checkPost()) {
-            $result = $this->taskModel->deleteTask($_POST[]);
-            if ($result) {
-                $this->location('/task/allTasks');
-            }
-        } else {
-            $this->location('/task/allTasks');
-        }
-    }
-
-    public function updateTaskAction()
-    {
-        if ($this->checkPost()) {
-            $result = $this->taskModel->updateTask($_POST);
-            if ($result) {
-                $this->location('/task/allTasks');
-            }
-        }
-    }
-
-    public function myTasksAction()
-    {
-        $isSigned = $this->taskModel->isSigned();
-        if ($isSigned) {
-            $myTasks = $this->taskModel->getMyTasks();
-            $options = [
-                'title' => 'Список заданий',
-                'content' => 'my_tasks.phtml',
-                'myTasks' => $myTasks
-            ];
-            if ($myTasks) {
-                $this->taskView->render($options);
-            } else {
-                $errMsg = 'Задания отсутствуют';
-                $this->taskView->render($options, $errMsg);
-            }
+        if ($this->taskModel->isSigned() == 'family') {
+            $data = $this->taskModel->getMyTasks(true);
+            $options = $this->taskView->getOptions('Заявить о выполнении', 'done_task_form.phtml', $data);
+            $this->taskView->render($options);
         } else {
             $this->homeLocation();
         }
     }
 
-    public function userExecTaskAction()
+    /**
+     * User report about executed a task
+     *
+     * @return void
+     */
+    public function userExecTaskAction(): void
     {
-        if ($this->checkPost()) {
-            $result = $this->taskModel->execTask($_POST);
+        if ($this->postData->isPost()) {
+            $result = $this->taskModel->execTask($this->postData->getData());
             if ($result) {
                 $this->location('/task/myTasks');
             }
         }
     }
 
-    public function getDoneTasksAction()
+    /**
+     * Update status all tasks
+     *
+     * @return void
+     */
+    public function updateStatusAction(): void
     {
-        $isSigned = $this->taskModel->isSigned();
-        if ($isSigned) {
-            $doneTasks = $this->taskModel->getDoneTasks();
-            $options = ['title' => 'Список заданий',
-                'content' => 'done_tasks.phtml',
-                'doneTasks' => $doneTasks
-            ];
-            if ($doneTasks) {
-                $this->taskView->render($options);
-            } else {
-                $errMsg = 'Нету выполненных заданий';
-                $this->taskView->render($options, $errMsg);
-            }
-        } else {
-            $this->homeLocation();
-        }
-    }
-
-    public function getFailTasksAction()
-    {
-        $isSigned = $this->taskModel->isSigned();
-        if ($isSigned) {
-            $failTasks = $this->taskModel->getFailTasks();
-            $options = [
-                'title' => 'Список заданий',
-                'content' => 'fail_tasks.phtml',
-                'failTasks' => $failTasks
-            ];
-            if ($failTasks) {
-                $this->taskView->render($options);
-            } else {
-                $errMsg = 'Нету проваленных заданий';
-                $this->taskView->render($options, $errMsg);
-            }
-        } else {
-            $this->homeLocation();
-        }
-    }
-
-    public function restartTaskAction()
-    {
-        if ($this->checkPost()) {
-            $result = $this->taskModel->restartTask($_POST);
-            if ($result) {
-                $this->location('/task/getFailTasks');
-            }
-        }
-    }
-
-    public function approveTaskAction()
-    {
-        if ($this->checkPost()) {
-            $result = $this->taskModel->approveTask($_POST);
-            if ($result) {
-                $this->location('/task/getDoneTasks');
-            }
-        }
-    }
-
-    public function updateTaskStatusAction()
-    {
-        $this->taskModel->updateTaskStatus();
+        $this->taskModel->updateStatus();
         $this->location('/task/allTasks');
     }
 }

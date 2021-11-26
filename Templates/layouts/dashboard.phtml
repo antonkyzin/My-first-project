@@ -1,0 +1,24 @@
+<?php /** @var $options array */ ?>
+
+<table class="table table-bordered">
+    <tr>
+        <td>id</td>
+        <td>Название</td>
+        <td>Описание</td>
+        <td>Статус</td>
+        <td>Цена</td>
+        <td>Всего студентов</td>
+        <td>Активных студентов</td>
+        <td>Заработанно всего</td>
+    </tr>
+    <?php foreach ($options['data']['courses'] as $cours): ?>
+        <tr>
+            <?php foreach ($cours as $item): ?>
+                <td><?= $item ?></td>
+            <?php endforeach; ?>
+            <td><a href="/course/studentsOnCourse/<?=$cours['id']?>">Студенты</a></td>
+            <td><a href="/course/facultativesOnCourse/<?=$cours['id']?>">Факультативы</a></td>
+        </tr>
+    <?php endforeach; ?>
+</table>
+<h3>Всего заработано: <?= $options['data']['sumRevenue'] ?></h3>
