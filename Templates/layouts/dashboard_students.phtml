@@ -4,7 +4,7 @@
  */ ?>
 
     <nav>
-        <a href="<?= $this->serverData->getReferer() ?>">Назад</a>
+        <a href="<?= $this->getRefererUri() ?>">Назад</a>
     </nav>
 <?php if ($options['data']): ?>
     <table class="table table-bordered">

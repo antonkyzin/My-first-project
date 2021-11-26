@@ -73,4 +73,9 @@ class DefaultView
         }
         return $value;
     }
+
+    public function getRefererUri(): string
+    {
+        return $this->sessionData->getReferer();
+    }
 }
